@@ -209,15 +209,27 @@ const I18N = {
       en: 'Customer Representative',
       ar: 'ممثل العميل'
     },
+    step1Heading: {
+      en: 'Customer Name / Select Customer',
+      ar: 'اسم العميل / اختيار عميل'
+    },
+    lblMoreDetailsSummary: {
+      en: '⚙️ Optional Document & Customer Details (Address, Tax No, CR No, Sales Rep, Warehouse) - [Prefixed]',
+      ar: '⚙️ تفاصيل اختيارية للمستند والعميل (العنوان، الضريبة، السجل، المندوب، المستودع) - [محددة مسبقاً]'
+    },
+    titleSelectProduct: {
+      en: 'Select Product From Catalog',
+      ar: 'اختيار صنف من الكتالوج'
+    },
 
     // Invoice Line Items
     secItemsHeading: {
-      en: 'Invoice Line Items (Auto 15% VAT)',
-      ar: 'بنود وأصناف الفاتورة (حساب آلي لضريبة 15%)'
+      en: 'Select Products & Enter QTY',
+      ar: 'اختيار الأصناف وإدخال الكمية (حساب آلي)'
     },
     btnAddFromCatalog: {
-      en: '➕ Add From Catalog',
-      ar: '➕ إضافة بند من القائمة'
+      en: '📦 Browse Catalog',
+      ar: '📦 اختيار من الكتالوج'
     },
     btnAddCustomLine: {
       en: '➕ Add Custom Item',

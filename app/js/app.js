@@ -207,33 +207,63 @@ const App = {
     this.populateCustomerSelect(inv.customer ? inv.customer.id : '');
 
     // Populate Customer Fields
-    document.getElementById('inv-cust-name').value = inv.customer ? inv.customer.name : '';
-    document.getElementById('inv-cust-tax').value = inv.customer ? inv.customer.taxNumber : 'لايوجد';
-    document.getElementById('inv-cust-cr').value = inv.customer ? (inv.customer.crNumber || '') : '';
-    document.getElementById('inv-cust-address').value = inv.customer ? (inv.customer.address || '') : '';
-    document.getElementById('inv-cust-dest').value = inv.customer ? (inv.customer.destination || 'محلي') : 'محلي';
-    document.getElementById('inv-cust-rep').value = inv.customer ? (inv.customer.representative || '') : '';
-    document.getElementById('inv-cust-balance').value = inv.customer ? (inv.customer.balance || '') : '';
+    const custNameEl = document.getElementById('inv-cust-name');
+    if (custNameEl) custNameEl.value = inv.customer ? (inv.customer.name || '') : '';
+    const custTaxEl = document.getElementById('inv-cust-tax');
+    if (custTaxEl) custTaxEl.value = inv.customer ? (inv.customer.taxNumber || 'لايوجد') : 'لايوجد';
+    const custCrEl = document.getElementById('inv-cust-cr');
+    if (custCrEl) custCrEl.value = inv.customer ? (inv.customer.crNumber || '') : '';
+    const custAddrEl = document.getElementById('inv-cust-address');
+    if (custAddrEl) custAddrEl.value = inv.customer ? (inv.customer.address || '') : '';
+    const custDestEl = document.getElementById('inv-cust-dest');
+    if (custDestEl) custDestEl.value = inv.customer ? (inv.customer.destination || 'محلي') : 'محلي';
+    const custRepEl = document.getElementById('inv-cust-rep');
+    if (custRepEl) custRepEl.value = inv.customer ? (inv.customer.representative || '') : '';
+    const custBalEl = document.getElementById('inv-cust-balance');
+    if (custBalEl) custBalEl.value = inv.customer ? (inv.customer.balance || '') : '';
 
     // Summary fields
-    document.getElementById('inv-additions').value = inv.additions || 0;
-    document.getElementById('inv-discount-percent').value = inv.discountPercent || 0;
-    document.getElementById('inv-discount-amount').value = inv.discountAmount || 0;
-    document.getElementById('inv-paid').value = inv.paidAmount || 0;
-    document.getElementById('inv-notes').value = inv.notes || '';
+    const addEl = document.getElementById('inv-additions');
+    if (addEl) addEl.value = inv.additions || 0;
+    const discPctEl = document.getElementById('inv-discount-percent');
+    if (discPctEl) discPctEl.value = inv.discountPercent || 0;
+    const discAmtEl = document.getElementById('inv-discount-amount');
+    if (discAmtEl) discAmtEl.value = inv.discountAmount || 0;
+    const paidEl = document.getElementById('inv-paid');
+    if (paidEl) paidEl.value = inv.paidAmount || 0;
+    const notesEl = document.getElementById('inv-notes');
+    if (notesEl) notesEl.value = inv.notes || '';
 
     this.renderInvoiceItemsRows();
+  },
+
+  onDocTypeChange: function() {
+    const docType = document.getElementById('inv-type')?.value || 'quotation';
+    this.currentInvoice.type = docType;
+    this.currentInvoice.typeNameAr = docType === 'quotation' ? 'عرض سعر مبيعات' : 'فاتورة ضريبية';
+    this.currentInvoice.typeNameEn = docType === 'quotation' ? 'Sales Quotation' : 'Tax Invoice';
+    
+    const settings = DB.getSettings();
+    if (!this.currentInvoice.id) {
+      const nextNum = docType === 'quotation' 
+        ? String(settings.nextQuotationNumber || 1).padStart(6, '0')
+        : String(settings.nextInvoiceNumber || 1).padStart(6, '0');
+      this.currentInvoice.number = nextNum;
+      const numEl = document.getElementById('inv-number');
+      if (numEl) numEl.value = nextNum;
+    }
   },
 
   populateCustomerSelect: function(selectedId = '') {
     const select = document.getElementById('inv-customer-picker');
     if (!select) return;
     const customers = DB.getCustomers();
-    select.innerHTML = '<option value="">-- اختر عميل مسجل أو أدخل بيانات جديدة --</option>';
+    const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
+    select.innerHTML = `<option value="">${isEn ? '-- Or Select Saved Customer --' : '-- اختر عميل مسجل أو اكتب الاسم مباشرة --'}</option>`;
     customers.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c.id;
-      opt.textContent = `${c.name} ${c.taxNumber ? '(' + c.taxNumber + ')' : ''}`;
+      opt.textContent = `${c.name} ${c.taxNumber && c.taxNumber !== 'لايوجد' ? '(' + c.taxNumber + ')' : ''}`;
       if (c.id === selectedId) opt.selected = true;
       select.appendChild(opt);
     });
@@ -253,14 +283,23 @@ const App = {
         representative: cust.representative || '',
         balance: cust.balance || ''
       };
-      document.getElementById('inv-cust-name').value = cust.name;
-      document.getElementById('inv-cust-tax').value = cust.taxNumber || 'لايوجد';
-      document.getElementById('inv-cust-cr').value = cust.crNumber || '';
-      document.getElementById('inv-cust-address').value = cust.address || '';
-      document.getElementById('inv-cust-dest').value = cust.destination || 'محلي';
-      document.getElementById('inv-cust-rep').value = cust.representative || '';
-      document.getElementById('inv-cust-balance').value = cust.balance || '';
+      const setF = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      };
+      setF('inv-cust-name', cust.name);
+      setF('inv-cust-tax', cust.taxNumber || 'لايوجد');
+      setF('inv-cust-cr', cust.crNumber || '');
+      setF('inv-cust-address', cust.address || '');
+      setF('inv-cust-dest', cust.destination || 'محلي');
+      setF('inv-cust-rep', cust.representative || '');
+      setF('inv-cust-balance', cust.balance || '');
     }
+  },
+
+  onCustomerNameInput: function(name) {
+    if (!this.currentInvoice.customer) this.currentInvoice.customer = {};
+    this.currentInvoice.customer.name = name;
   },
 
   renderInvoiceItemsRows: function() {
@@ -269,50 +308,47 @@ const App = {
     tbody.innerHTML = '';
 
     const products = DB.getProducts();
+    const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
 
     this.currentInvoice.items.forEach((item, index) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td style="width: 40px; text-align: center; font-weight: bold;">${index + 1}</td>
-        <td style="width: 100px;">
-          <input type="text" class="form-control form-control-sm item-code-input" data-index="${index}" value="${item.code || ''}" placeholder="رقم الصنف">
-        </td>
+        <td style="width: 35px; text-align: center; font-weight: bold; color: #64748b;">${index + 1}</td>
         <td>
-          <div style="display: flex; gap: 4px;">
-            <input type="text" class="form-control form-control-sm item-desc-input" data-index="${index}" value="${item.description || ''}" placeholder="اسم الصنف / البيان" style="flex: 1;">
-            <select class="form-control form-control-sm item-picker-select" data-index="${index}" style="width: 130px;">
-              <option value="">-- اختر صنف --</option>
-              ${products.map(p => `<option value="${p.id}" ${p.code === item.code ? 'selected' : ''}>${p.name}</option>`).join('')}
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <select class="form-control form-control-sm item-picker-select" data-index="${index}" style="font-weight: 600; color: #0f172a; background: #f8fafc;">
+              <option value="">${isEn ? '-- Select Product from Catalog --' : '-- اختر الصنف من القائمة --'}</option>
+              ${products.map(p => `<option value="${p.id}" ${p.code === item.code || p.name === item.description ? 'selected' : ''}>${p.name} (${(p.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR)</option>`).join('')}
+              <option value="custom">✏️ ${isEn ? 'Custom / Edit Description below' : 'بيان مخصص (تعديل النص أدناه)'}</option>
             </select>
+            <input type="text" class="form-control form-control-sm item-desc-input" data-index="${index}" value="${item.description || ''}" placeholder="${isEn ? 'Item description / Name' : 'اسم الصنف / البيان'}" style="font-size: 13px;">
+            <input type="hidden" class="item-code-input" data-index="${index}" value="${item.code || ''}">
           </div>
         </td>
-        <td style="width: 90px;">
-          <input type="text" class="form-control form-control-sm item-unit-input" data-index="${index}" value="${item.unit || 'كرتون'}" placeholder="الوحدة">
-        </td>
-        <td style="width: 90px;">
-          <input type="number" step="any" min="0" class="form-control form-control-sm item-qty-input" data-index="${index}" value="${item.quantity}" style="text-align: center;">
+        <td style="width: 85px;">
+          <input type="text" class="form-control form-control-sm item-unit-input" data-index="${index}" value="${item.unit || (isEn ? 'Carton' : 'كرتون')}" placeholder="Unit">
         </td>
         <td style="width: 100px;">
-          <input type="number" step="0.01" min="0" class="form-control form-control-sm item-price-input" data-index="${index}" value="${item.price}" style="text-align: center;">
+          <input type="number" step="0.01" min="0" class="form-control form-control-sm item-price-input" data-index="${index}" value="${item.price !== undefined ? item.price : 0}" style="text-align: center; font-weight: 600;">
         </td>
-        <td style="width: 100px; text-align: center; font-weight: bold; color: #002060;">
+        <td style="width: 95px;">
+          <input type="number" step="any" min="0" class="form-control form-control-sm item-qty-input" data-index="${index}" value="${item.quantity !== undefined ? item.quantity : 1}" style="text-align: center;">
+        </td>
+        <td style="width: 90px; text-align: center; font-weight: bold; color: #002060;">
           ${(item.net || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </td>
-        <td style="width: 80px;">
-          <select class="form-control form-control-sm item-vat-select" data-index="${index}" style="text-align: center;">
-            <option value="15" ${item.vatRate == 15 ? 'selected' : ''}>15%</option>
-            <option value="5" ${item.vatRate == 5 ? 'selected' : ''}>5%</option>
-            <option value="0" ${item.vatRate == 0 ? 'selected' : ''}>0%</option>
-          </select>
+        <td style="width: 60px; text-align: center; color: #64748b; font-size: 12px;">
+          15%
+          <input type="hidden" class="item-vat-val" data-index="${index}" value="15">
         </td>
-        <td style="width: 90px; text-align: center; color: #b91c1c; font-weight: 600;">
+        <td style="width: 85px; text-align: center; color: #b91c1c; font-weight: 600;">
           ${(item.vatAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </td>
-        <td style="width: 110px; text-align: center; font-weight: bold; background-color: #f8fafc;">
+        <td style="width: 110px; text-align: center; font-weight: bold; background-color: #f8fafc; color: #0284c7;">
           ${(item.totalWithVat || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </td>
-        <td style="width: 50px; text-align: center;">
-          <button type="button" class="btn btn-sm btn-outline btn-danger-icon" onclick="App.removeItemRow(${index})" title="حذف السطر">
+        <td style="width: 40px; text-align: center;">
+          <button type="button" class="btn btn-sm btn-outline btn-danger-icon" onclick="App.removeItemRow(${index})" title="${isEn ? 'Remove row' : 'حذف السطر'}">
             ✕
           </button>
         </td>
@@ -324,14 +360,6 @@ const App = {
   },
 
   bindItemInputsEvents: function() {
-    // Code input
-    document.querySelectorAll('.item-code-input').forEach(input => {
-      input.addEventListener('input', (e) => {
-        const idx = parseInt(e.target.dataset.index);
-        this.currentInvoice.items[idx].code = e.target.value;
-      });
-    });
-
     // Description input
     document.querySelectorAll('.item-desc-input').forEach(input => {
       input.addEventListener('input', (e) => {
@@ -348,7 +376,7 @@ const App = {
       });
     });
 
-    // Quantity input
+    // Quantity input (Immediate Live Recalculation)
     document.querySelectorAll('.item-qty-input').forEach(input => {
       input.addEventListener('input', (e) => {
         const idx = parseInt(e.target.dataset.index);
@@ -357,7 +385,7 @@ const App = {
       });
     });
 
-    // Price input
+    // Price input (Immediate Live Recalculation)
     document.querySelectorAll('.item-price-input').forEach(input => {
       input.addEventListener('input', (e) => {
         const idx = parseInt(e.target.dataset.index);
@@ -366,30 +394,31 @@ const App = {
       });
     });
 
-    // VAT Select
-    document.querySelectorAll('.item-vat-select').forEach(select => {
-      select.addEventListener('change', (e) => {
-        const idx = parseInt(e.target.dataset.index);
-        this.currentInvoice.items[idx].vatRate = parseFloat(e.target.value) || 0;
-        this.recalculateInvoice();
-      });
-    });
-
-    // Product Picker
+    // Product Picker Dropdown in Line Items
     document.querySelectorAll('.item-picker-select').forEach(select => {
       select.addEventListener('change', (e) => {
         const idx = parseInt(e.target.dataset.index);
         const prodId = e.target.value;
-        if (prodId) {
+        if (prodId && prodId !== 'custom') {
           const prod = DB.getProducts().find(p => p.id === prodId);
           if (prod) {
-            this.currentInvoice.items[idx].code = prod.code;
+            this.currentInvoice.items[idx].code = prod.code || '';
             this.currentInvoice.items[idx].description = prod.name;
             this.currentInvoice.items[idx].unit = prod.unit || 'كرتون';
             this.currentInvoice.items[idx].price = prod.price || 0;
             this.currentInvoice.items[idx].vatRate = prod.vatRate || 15;
+            
+            // Re-render and automatically focus the QTY field!
             this.renderInvoiceItemsRows();
             this.recalculateInvoice();
+            
+            setTimeout(() => {
+              const qtyInputs = document.querySelectorAll('.item-qty-input');
+              if (qtyInputs[idx]) {
+                qtyInputs[idx].focus();
+                qtyInputs[idx].select();
+              }
+            }, 50);
           }
         }
       });
@@ -401,7 +430,7 @@ const App = {
       sr: this.currentInvoice.items.length + 1,
       code: '',
       description: '',
-      unit: 'كرتون',
+      unit: (typeof I18N !== 'undefined' && I18N.currentLang === 'en') ? 'Carton' : 'كرتون',
       quantity: 1,
       price: 0,
       net: 0,
@@ -411,11 +440,23 @@ const App = {
     });
     this.renderInvoiceItemsRows();
     this.recalculateInvoice();
+
+    // Focus the newly added row
+    setTimeout(() => {
+      const selects = document.querySelectorAll('.item-picker-select');
+      if (selects.length > 0) {
+        selects[selects.length - 1].focus();
+      }
+    }, 50);
+  },
+
+  addCustomLineItem: function() {
+    this.addItemRow();
   },
 
   removeItemRow: function(index) {
     if (this.currentInvoice.items.length <= 1) {
-      alert('يجب أن تحتوي الفاتورة على سطر واحد على الأقل.');
+      alert((typeof I18N !== 'undefined' && I18N.currentLang === 'en') ? 'Invoice must have at least one line item.' : 'يجب أن تحتوي الفاتورة على سطر واحد على الأقل.');
       return;
     }
     this.currentInvoice.items.splice(index, 1);
@@ -432,13 +473,14 @@ const App = {
       item.sr = idx + 1;
       const qty = parseFloat(item.quantity) || 0;
       const price = parseFloat(item.price) || 0;
-      const vatRate = parseFloat(item.vatRate) || 0;
+      const vatRate = 15; // Standard 15% VAT
 
       const net = qty * price;
       const vatAmount = net * (vatRate / 100);
       const totalWithVat = net + vatAmount;
 
       item.net = net;
+      item.vatRate = vatRate;
       item.vatAmount = vatAmount;
       item.totalWithVat = totalWithVat;
 
@@ -1112,7 +1154,7 @@ const App = {
   },
 
   // -------------------------------------------------------------------------
-  // PRODUCTS & CATEGORIES
+  // PRODUCTS & PRICE CATALOG
   // -------------------------------------------------------------------------
   renderProductsList: function() {
     const tbody = document.getElementById('products-table-body');
@@ -1133,7 +1175,7 @@ const App = {
         <td><span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px;">${p.category || 'General'}</span></td>
         <td>${p.unit || (isEn ? 'Carton' : 'كرتون')}</td>
         <td style="font-weight: bold;">${(p.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR</td>
-        <td>%${p.vatRate || 15}</td>
+        <td>%${p.vatRate !== undefined ? p.vatRate : 15}</td>
         <td>
           <div style="display: flex; gap: 6px; justify-content: flex-end;">
             <button class="btn btn-sm btn-outline" onclick="App.openEditProductModal('${p.id}')">${isEn ? 'Edit' : 'تعديل'}</button>
@@ -1145,77 +1187,204 @@ const App = {
   },
 
   openAddProductModal: function() {
-    document.getElementById('modal-prod-title').textContent = 'إضافة منتج جديد';
-    document.getElementById('prod-id').value = '';
-    document.getElementById('prod-code').value = '';
-    document.getElementById('prod-name').value = '';
-    document.getElementById('prod-name-en').value = '';
-    document.getElementById('prod-unit').value = 'كرتون';
-    document.getElementById('prod-price').value = '';
-    document.getElementById('prod-vat').value = '15';
-    document.getElementById('prod-category').value = 'منظفات';
-    document.getElementById('modal-product').classList.add('show');
+    const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
+    const title = document.getElementById('modal-prod-title');
+    if (title) title.textContent = isEn ? 'Add New Product' : 'إضافة منتج جديد';
+
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+    };
+
+    setVal('prod-id', '');
+    setVal('prod-code', '');
+    setVal('prod-name', '');
+    setVal('prod-category', isEn ? 'General' : 'عام');
+    setVal('prod-unit', isEn ? 'Carton' : 'كرتون');
+    setVal('prod-price', '');
+    setVal('prod-vat', '15');
+
+    const modal = document.getElementById('modal-product');
+    if (modal) modal.classList.add('show');
   },
 
   openEditProductModal: function(id) {
     const prod = DB.getProducts().find(p => p.id === id);
     if (!prod) return;
-    document.getElementById('modal-prod-title').textContent = 'تعديل منتج';
-    document.getElementById('prod-id').value = prod.id;
-    document.getElementById('prod-code').value = prod.code || '';
-    document.getElementById('prod-name').value = prod.name;
-    document.getElementById('prod-name-en').value = prod.nameEn || '';
-    document.getElementById('prod-unit').value = prod.unit || 'كرتون';
-    document.getElementById('prod-price').value = prod.price;
-    document.getElementById('prod-vat').value = prod.vatRate || 15;
-    document.getElementById('prod-category').value = prod.category || 'عام';
-    document.getElementById('modal-product').classList.add('show');
+    const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
+    const title = document.getElementById('modal-prod-title');
+    if (title) title.textContent = isEn ? 'Edit Product' : 'تعديل منتج';
+
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = (val !== undefined && val !== null) ? val : '';
+    };
+
+    setVal('prod-id', prod.id);
+    setVal('prod-code', prod.code || '');
+    setVal('prod-name', prod.name || '');
+    setVal('prod-category', prod.category || (isEn ? 'General' : 'عام'));
+    setVal('prod-unit', prod.unit || (isEn ? 'Carton' : 'كرتون'));
+    setVal('prod-price', prod.price || 0);
+    setVal('prod-vat', prod.vatRate !== undefined ? prod.vatRate : 15);
+
+    const modal = document.getElementById('modal-product');
+    if (modal) modal.classList.add('show');
   },
 
   closeProductModal: function() {
-    document.getElementById('modal-product').classList.remove('show');
+    const modal = document.getElementById('modal-product');
+    if (modal) modal.classList.remove('show');
   },
 
   saveProductForm: function() {
-    const name = document.getElementById('prod-name').value.trim();
+    const nameInput = document.getElementById('prod-name');
+    const name = nameInput ? nameInput.value.trim() : '';
     if (!name) {
-      alert('يرجى كتابة اسم المنتج.');
+      alert((typeof I18N !== 'undefined' && I18N.currentLang === 'en') ? 'Please enter product name/description.' : 'يرجى كتابة اسم المنتج أو البيان.');
       return;
     }
 
     const prod = {
-      id: document.getElementById('prod-id').value || null,
-      code: document.getElementById('prod-code').value.trim(),
+      id: document.getElementById('prod-id')?.value || null,
+      code: document.getElementById('prod-code')?.value.trim() || '',
       name: name,
-      nameEn: document.getElementById('prod-name-en').value.trim(),
-      unit: document.getElementById('prod-unit').value.trim() || 'كرتون',
-      price: parseFloat(document.getElementById('prod-price').value) || 0,
-      vatRate: parseFloat(document.getElementById('prod-vat').value) || 15,
-      category: document.getElementById('prod-category').value.trim() || 'عام'
+      category: document.getElementById('prod-category')?.value.trim() || 'General',
+      unit: document.getElementById('prod-unit')?.value.trim() || 'كرتون',
+      price: parseFloat(document.getElementById('prod-price')?.value) || 0,
+      vatRate: parseFloat(document.getElementById('prod-vat')?.value) || 15
     };
 
     DB.saveProduct(prod);
     this.closeProductModal();
     this.renderProductsList();
+    this.renderInvoiceItemsRows(); // Refresh dropdown in active invoice
   },
 
   deleteProduct: function(id) {
-    if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
+    const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
+    const confirmMsg = isEn ? 'Are you sure you want to delete this product?' : 'هل أنت متأكد من حذف هذا المنتج؟';
+    if (confirm(confirmMsg)) {
       DB.deleteProduct(id);
       this.renderProductsList();
+      this.renderInvoiceItemsRows();
     }
   },
 
   // -------------------------------------------------------------------------
-  // CUSTOMERS
+  // PRODUCT CATALOG PICKER MODAL
+  // -------------------------------------------------------------------------
+  openProductPickerModal: function(targetItemIndex = null) {
+    const modal = document.getElementById('modal-product-picker');
+    if (!modal) return;
+    this.pickerTargetIndex = targetItemIndex;
+    const searchInput = document.getElementById('catalog-search-input');
+    if (searchInput) searchInput.value = '';
+    this.filterProductPicker('');
+    modal.classList.add('show');
+  },
+
+  closeProductPickerModal: function() {
+    const modal = document.getElementById('modal-product-picker');
+    if (modal) modal.classList.remove('show');
+  },
+
+  filterProductPicker: function(query = '') {
+    const tbody = document.getElementById('catalog-picker-body');
+    if (!tbody) return;
+    const products = DB.getProducts();
+    const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
+    const q = (query || '').toLowerCase().trim();
+
+    const filtered = q ? products.filter(p => 
+      (p.name && p.name.toLowerCase().includes(q)) ||
+      (p.code && p.code.toLowerCase().includes(q)) ||
+      (p.category && p.category.toLowerCase().includes(q))
+    ) : products;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:18px; color:#888;">${isEn ? 'No products match your search.' : 'لا توجد منتجات مطابقة للبحث.'}</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(p => `
+      <tr>
+        <td style="font-weight:700; color:#0284c7;">${p.code || '-'}</td>
+        <td style="font-weight:600;">${p.name}</td>
+        <td>${p.unit || (isEn ? 'Carton' : 'كرتون')}</td>
+        <td style="font-weight:700; text-align:center;">${(p.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR</td>
+        <td style="text-align:center;">
+          <button type="button" class="btn btn-sm btn-primary" onclick="App.selectProductFromPicker('${p.id}')">
+            ➕ ${isEn ? 'Select' : 'اختيار'}
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  },
+
+  selectProductFromPicker: function(productId) {
+    const prod = DB.getProducts().find(p => p.id === productId);
+    if (!prod) return;
+
+    const targetIdx = this.pickerTargetIndex;
+    if (targetIdx !== null && targetIdx !== undefined && this.currentInvoice.items[targetIdx]) {
+      this.currentInvoice.items[targetIdx].code = prod.code || '';
+      this.currentInvoice.items[targetIdx].description = prod.name;
+      this.currentInvoice.items[targetIdx].unit = prod.unit || 'كرتون';
+      this.currentInvoice.items[targetIdx].price = prod.price || 0;
+      this.currentInvoice.items[targetIdx].vatRate = prod.vatRate || 15;
+    } else {
+      // If the first row is empty, populate it; otherwise push new row
+      const firstItem = this.currentInvoice.items[0];
+      if (this.currentInvoice.items.length === 1 && (!firstItem.description || firstItem.price === 0)) {
+        firstItem.code = prod.code || '';
+        firstItem.description = prod.name;
+        firstItem.unit = prod.unit || 'كرتون';
+        firstItem.price = prod.price || 0;
+        firstItem.quantity = 1;
+        firstItem.vatRate = prod.vatRate || 15;
+      } else {
+        this.currentInvoice.items.push({
+          sr: this.currentInvoice.items.length + 1,
+          code: prod.code || '',
+          description: prod.name,
+          unit: prod.unit || 'كرتون',
+          quantity: 1,
+          price: prod.price || 0,
+          net: prod.price || 0,
+          vatRate: 15,
+          vatAmount: (prod.price || 0) * 0.15,
+          totalWithVat: (prod.price || 0) * 1.15
+        });
+      }
+    }
+
+    this.closeProductPickerModal();
+    this.renderInvoiceItemsRows();
+    this.recalculateInvoice();
+
+    // Focus the quantity input of the targeted row
+    setTimeout(() => {
+      const qtyInputs = document.querySelectorAll('.item-qty-input');
+      const targetFocusIdx = (targetIdx !== null && targetIdx !== undefined) ? targetIdx : (this.currentInvoice.items.length - 1);
+      if (qtyInputs[targetFocusIdx]) {
+        qtyInputs[targetFocusIdx].focus();
+        qtyInputs[targetFocusIdx].select();
+      }
+    }, 50);
+  },
+
+  // -------------------------------------------------------------------------
+  // CUSTOMERS DIRECTORY
   // -------------------------------------------------------------------------
   renderCustomersList: function() {
     const tbody = document.getElementById('customers-table-body');
     if (!tbody) return;
     const customers = DB.getCustomers();
+    const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
 
     if (customers.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #888;">لا يوجد عملاء مسجلين. أضف عميلك الأول الآن.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px; color: #888;">${isEn ? 'No customers registered yet.' : 'لا يوجد عملاء مسجلين.'}</td></tr>`;
       return;
     }
 
@@ -1228,8 +1397,8 @@ const App = {
         <td>${c.address || '-'}</td>
         <td>
           <div style="display: flex; gap: 6px; justify-content: flex-end;">
-            <button class="btn btn-sm btn-outline" onclick="App.openEditCustomerModal('${c.id}')">تعديل</button>
-            <button class="btn btn-sm btn-danger" onclick="App.deleteCustomer('${c.id}')">حذف</button>
+            <button class="btn btn-sm btn-outline" onclick="App.openEditCustomerModal('${c.id}')">${isEn ? 'Edit' : 'تعديل'}</button>
+            <button class="btn btn-sm btn-danger" onclick="App.deleteCustomer('${c.id}')">${isEn ? 'Delete' : 'حذف'}</button>
           </div>
         </td>
       </tr>
@@ -1237,60 +1406,85 @@ const App = {
   },
 
   openAddCustomerModal: function() {
-    document.getElementById('modal-cust-title').textContent = 'إضافة عميل جديد';
-    document.getElementById('cust-id').value = '';
-    document.getElementById('cust-name').value = '';
-    document.getElementById('cust-tax').value = 'لايوجد';
-    document.getElementById('cust-cr').value = '';
-    document.getElementById('cust-phone').value = '';
-    document.getElementById('cust-address').value = '';
-    document.getElementById('cust-dest').value = 'محلي';
-    document.getElementById('modal-customer').classList.add('show');
+    const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
+    const title = document.getElementById('modal-cust-title');
+    if (title) title.textContent = isEn ? 'Add New Customer' : 'إضافة عميل جديد';
+
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+    };
+
+    setVal('cust-id', '');
+    setVal('cust-name', '');
+    setVal('cust-tax', 'لايوجد');
+    setVal('cust-cr', '');
+    setVal('cust-phone', '');
+    setVal('cust-address', '');
+    setVal('cust-dest', isEn ? 'Local' : 'محلي');
+
+    const modal = document.getElementById('modal-customer');
+    if (modal) modal.classList.add('show');
   },
 
   openEditCustomerModal: function(id) {
     const cust = DB.getCustomers().find(c => c.id === id);
     if (!cust) return;
-    document.getElementById('modal-cust-title').textContent = 'تعديل بيانات عميل';
-    document.getElementById('cust-id').value = cust.id;
-    document.getElementById('cust-name').value = cust.name;
-    document.getElementById('cust-tax').value = cust.taxNumber || 'لايوجد';
-    document.getElementById('cust-cr').value = cust.crNumber || '';
-    document.getElementById('cust-phone').value = cust.phone || '';
-    document.getElementById('cust-address').value = cust.address || '';
-    document.getElementById('cust-dest').value = cust.destination || 'محلي';
-    document.getElementById('modal-customer').classList.add('show');
+    const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
+    const title = document.getElementById('modal-cust-title');
+    if (title) title.textContent = isEn ? 'Edit Customer' : 'تعديل بيانات عميل';
+
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = (val !== undefined && val !== null) ? val : '';
+    };
+
+    setVal('cust-id', cust.id);
+    setVal('cust-name', cust.name || '');
+    setVal('cust-tax', cust.taxNumber || 'لايوجد');
+    setVal('cust-cr', cust.crNumber || '');
+    setVal('cust-phone', cust.phone || '');
+    setVal('cust-address', cust.address || '');
+    setVal('cust-dest', cust.destination || (isEn ? 'Local' : 'محلي'));
+
+    const modal = document.getElementById('modal-customer');
+    if (modal) modal.classList.add('show');
   },
 
   closeCustomerModal: function() {
-    document.getElementById('modal-customer').classList.remove('show');
+    const modal = document.getElementById('modal-customer');
+    if (modal) modal.classList.remove('show');
   },
 
   saveCustomerForm: function() {
-    const name = document.getElementById('cust-name').value.trim();
+    const nameInput = document.getElementById('cust-name');
+    const name = nameInput ? nameInput.value.trim() : '';
     if (!name) {
-      alert('يرجى كتابة اسم العميل.');
+      alert((typeof I18N !== 'undefined' && I18N.currentLang === 'en') ? 'Please enter customer name.' : 'يرجى كتابة اسم العميل.');
       return;
     }
 
     const cust = {
-      id: document.getElementById('cust-id').value || null,
+      id: document.getElementById('cust-id')?.value || null,
       name: name,
-      taxNumber: document.getElementById('cust-tax').value.trim() || 'لايوجد',
-      crNumber: document.getElementById('cust-cr').value.trim(),
-      phone: document.getElementById('cust-phone').value.trim(),
-      address: document.getElementById('cust-address').value.trim(),
-      destination: document.getElementById('cust-dest').value.trim() || 'محلي'
+      taxNumber: document.getElementById('cust-tax')?.value.trim() || 'لايوجد',
+      crNumber: document.getElementById('cust-cr')?.value.trim() || '',
+      phone: document.getElementById('cust-phone')?.value.trim() || '',
+      address: document.getElementById('cust-address')?.value.trim() || '',
+      destination: document.getElementById('cust-dest')?.value.trim() || 'محلي'
     };
 
-    DB.saveCustomer(cust);
+    const saved = DB.saveCustomer(cust);
     this.closeCustomerModal();
     this.renderCustomersList();
-    this.populateCustomerSelect();
+    this.populateCustomerSelect(saved.id);
+    this.onCustomerSelectChange(saved.id);
   },
 
   deleteCustomer: function(id) {
-    if (confirm('هل أنت متأكد من حذف هذا العميل؟')) {
+    const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
+    const confirmMsg = isEn ? 'Are you sure you want to delete this customer?' : 'هل أنت متأكد من حذف هذا العميل؟';
+    if (confirm(confirmMsg)) {
       DB.deleteCustomer(id);
       this.renderCustomersList();
       this.populateCustomerSelect();
