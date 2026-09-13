@@ -678,7 +678,7 @@ textarea.form-control {
   width: 210mm;
   min-height: 297mm;
   margin: 0 auto;
-  padding: 8mm 12mm 10mm;
+  padding: 12mm 12mm 10mm;
   color: #000000;
   box-sizing: border-box;
   font-family: 'Arial', 'Cairo', sans-serif;
@@ -696,6 +696,7 @@ textarea.form-control {
   grid-template-columns: 1fr 140px 1fr;
   align-items: center;
   border-bottom: 1.5px solid #000;
+  padding-top: 2px;
   padding-bottom: 6px;
   margin-bottom: 4px;
 }
@@ -716,7 +717,7 @@ textarea.form-control {
 }
 
 .inv-company-logo img {
-  max-height: 65px;
+  max-height: 56px;
   max-width: 135px;
   object-fit: contain;
 }
@@ -806,10 +807,7 @@ textarea.form-control {
 }
 
 .inv-region-bar {
-  display: flex;
-  height: 14px;
-  border: 1.5px solid #000;
-  margin-bottom: 4px;
+  display: none !important;
 }
 
 .inv-region-block {
@@ -856,21 +854,23 @@ textarea.form-control {
 
 .inv-totals-grid {
   display: grid;
-  grid-template-columns: 1.4fr 0.8fr 1.8fr;
+  grid-template-columns: 2fr 1fr 1.3fr;
   gap: 6px;
   margin-bottom: 4px;
 }
 
 .inv-fin-box {
   border: 1.5px solid #000;
-  font-size: 11px;
+  font-size: 10.5px;
 }
 
 .inv-fin-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 2px 6px;
   border-bottom: 1px solid #000;
+  white-space: nowrap;
 }
 
 .inv-fin-row:last-child {
@@ -890,7 +890,7 @@ textarea.form-control {
 .inv-fin-row.grand-total {
   font-weight: 800;
   background-color: #f1f5f9;
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
 .inv-mid-boxes {
@@ -1778,11 +1778,11 @@ textarea.form-control {
               <tr>
                 <th style="width: 35px; text-align: center;" data-i18n="colSr">#</th>
                 <th style="min-width: 220px;" data-i18n="colDesc">Select Product / Item Name</th>
-                <th style="width: 85px;" data-i18n="colUnit">Unit</th>
+                <th style="width: 100px; text-align: center;" data-i18n="colUnit">Unit</th>
                 <th style="width: 100px; text-align: center;" data-i18n="colPrice">Unit Price</th>
                 <th style="width: 95px; text-align: center; background: #e0f2fe; color: #0369a1;" data-i18n="colQty">QTY ✏️</th>
                 <th style="width: 90px; text-align: center;" data-i18n="colNet">Net Total</th>
-                <th style="width: 60px; text-align: center;" data-i18n="colVatRate">VAT %</th>
+                <th style="width: 65px; text-align: center;" data-i18n="colVatRate">VAT %</th>
                 <th style="width: 85px; text-align: center;" data-i18n="colVatAmt">VAT Amount</th>
                 <th style="width: 110px; text-align: center;" data-i18n="colTotalWithVat">Total (Inc. VAT)</th>
                 <th style="width: 40px;"></th>
@@ -6452,8 +6452,23 @@ const App = {
 
     const products = DB.getProducts();
     const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
+    const defaultVat = (DB.getSettings().defaultVatRate !== undefined && DB.getSettings().defaultVatRate !== null && !isNaN(parseFloat(DB.getSettings().defaultVatRate))) ? parseFloat(DB.getSettings().defaultVatRate) : 15;
 
     this.currentInvoice.items.forEach((item, index) => {
+      const qty = parseFloat(item.quantity) || 0;
+      const price = parseFloat(item.price) || 0;
+      const vRate = (item.vatRate !== undefined && item.vatRate !== null && !isNaN(parseFloat(item.vatRate))) ? parseFloat(item.vatRate) : defaultVat;
+      const net = qty * price;
+      const vat = net * (vRate / 100);
+      const total = net + vat;
+
+      item.quantity = qty;
+      item.price = price;
+      item.net = net;
+      item.vatRate = vRate;
+      item.vatAmount = vat;
+      item.totalWithVat = total;
+
       const tr = document.createElement('tr');
       tr.className = 'inv-item-row';
       tr.dataset.rowIndex = index;
@@ -6478,9 +6493,9 @@ const App = {
             <input type="hidden" class="item-code-input" data-index="${index}" value="${item.code || ''}">
           </div>
         </td>
-        <td class="col-unit-cell" style="width: 85px;">
+        <td class="col-unit-cell" style="width: 100px;">
           <label class="mobile-field-label">${isEn ? 'Unit' : 'الوحدة'}</label>
-          <input type="text" class="form-control form-control-sm item-unit-input" data-index="${index}" value="${item.unit || (isEn ? 'Carton' : 'كرتون')}" placeholder="Unit">
+          <input type="text" class="form-control form-control-sm item-unit-input" data-index="${index}" value="${item.unit || (isEn ? 'Carton' : 'كرتون')}" placeholder="Unit" style="text-align: center; padding: 4px 4px; font-size: 13px;">
         </td>
         <td class="col-price-cell" style="width: 105px;">
           <label class="mobile-field-label">${isEn ? 'Unit Price (SAR)' : 'سعر الوحدة'}</label>
@@ -6488,24 +6503,24 @@ const App = {
         </td>
         <td class="col-qty-cell" style="width: 100px;">
           <label class="mobile-field-label">${isEn ? 'QTY (الكمية)' : 'الكمية'}</label>
-          <input type="number" step="any" min="0" class="form-control form-control-sm item-qty-input" data-index="${index}" value="${item.quantity !== undefined ? item.quantity : 1}" style="text-align: center;">
+          <input type="number" step="any" min="0" class="form-control form-control-sm item-qty-input" data-index="${index}" value="${item.quantity !== undefined ? item.quantity : 1}" style="text-align: center; font-weight: 700;">
         </td>
         <td class="col-net-cell" style="width: 90px; text-align: center; font-weight: bold; color: #002060;">
           <label class="mobile-field-label">${isEn ? 'Net Total' : 'قبل الضريبة'}</label>
-          <span class="row-calc-net" id="row-net-${index}">${(item.net || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span class="row-calc-net" id="row-net-${index}">${item.net.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </td>
-        <td class="col-vatrate-cell" style="width: 60px; text-align: center; color: #64748b; font-size: 12px;">
+        <td class="col-vatrate-cell" style="width: 65px; text-align: center; color: #64748b; font-size: 12px;">
           <label class="mobile-field-label">${isEn ? 'VAT %' : 'نسبة الضريبة'}</label>
-          <span id="row-vatrate-${index}">%${(item.vatRate !== undefined && item.vatRate !== null) ? item.vatRate : 15}</span>
-          <input type="hidden" class="item-vat-val" data-index="${index}" value="${(item.vatRate !== undefined && item.vatRate !== null) ? item.vatRate : 15}">
+          <span id="row-vatrate-${index}">${isEn ? `${item.vatRate}%` : `%${item.vatRate}`}</span>
+          <input type="hidden" class="item-vat-val" data-index="${index}" value="${item.vatRate}">
         </td>
         <td class="col-vatamt-cell" style="width: 85px; text-align: center; color: #b91c1c; font-weight: 600;">
-          <label class="mobile-field-label">${isEn ? 'VAT' : 'الضريبة'} (%<span id="row-vat-rate-label-${index}">${(item.vatRate !== undefined && item.vatRate !== null) ? item.vatRate : 15}</span>)</label>
-          <span class="row-calc-vat" id="row-vat-${index}">${(item.vatAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <label class="mobile-field-label">${isEn ? `VAT (${item.vatRate}%)` : `ضريبة (%${item.vatRate})`}</label>
+          <span class="row-calc-vat" id="row-vat-${index}">${item.vatAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </td>
         <td class="col-total-cell" style="width: 110px; text-align: center; font-weight: bold; background-color: #f0f9ff; color: #0284c7;">
           <label class="mobile-field-label">${isEn ? 'Total (Inc. VAT)' : 'الإجمالي شامل الضريبة'}</label>
-          <span class="row-calc-total" id="row-total-${index}">${(item.totalWithVat || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span class="row-calc-total" id="row-total-${index}">${item.totalWithVat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </td>
         <td class="col-action-cell" style="width: 40px; text-align: center;">
           <button type="button" class="btn btn-sm btn-outline btn-danger-icon desktop-delete-btn" onclick="App.removeItemRow(${index})" title="${isEn ? 'Remove row' : 'حذف السطر'}">
@@ -6520,6 +6535,8 @@ const App = {
   },
 
   bindItemInputsEvents: function() {
+    const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
+
     // Description input
     document.querySelectorAll('.item-desc-input').forEach(input => {
       input.addEventListener('input', (e) => {
@@ -6615,11 +6632,20 @@ const App = {
           const prod = DB.getProducts().find(p => p.id === prodId);
           if (prod && this.currentInvoice.items[idx]) {
             const pVat = (prod.vatRate !== undefined && prod.vatRate !== null && !isNaN(parseFloat(prod.vatRate))) ? parseFloat(prod.vatRate) : (DB.getSettings().defaultVatRate || 15);
+            const pPrice = parseFloat(prod.price) || 0;
+            const curQty = parseFloat(this.currentInvoice.items[idx].quantity) || 1;
+            const net = curQty * pPrice;
+            const vatAmt = net * (pVat / 100);
+
             this.currentInvoice.items[idx].code = prod.code || '';
             this.currentInvoice.items[idx].description = prod.name;
             this.currentInvoice.items[idx].unit = prod.unit || 'كرتون';
-            this.currentInvoice.items[idx].price = prod.price || 0;
+            this.currentInvoice.items[idx].price = pPrice;
             this.currentInvoice.items[idx].vatRate = pVat;
+            this.currentInvoice.items[idx].quantity = curQty;
+            this.currentInvoice.items[idx].net = net;
+            this.currentInvoice.items[idx].vatAmount = vatAmt;
+            this.currentInvoice.items[idx].totalWithVat = net + vatAmt;
             
             // Re-render and automatically focus the QTY field!
             this.renderInvoiceItemsRows();
@@ -6683,6 +6709,7 @@ const App = {
     let subtotal = 0;
     let totalVat = 0;
 
+    const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
     const defaultVat = (DB.getSettings().defaultVatRate !== undefined && DB.getSettings().defaultVatRate !== null && !isNaN(parseFloat(DB.getSettings().defaultVatRate))) ? parseFloat(DB.getSettings().defaultVatRate) : 15;
 
     this.currentInvoice.items.forEach((item, idx) => {
@@ -6695,6 +6722,8 @@ const App = {
       const vatAmount = net * (vatRate / 100);
       const totalWithVat = net + vatAmount;
 
+      item.quantity = qty;
+      item.price = price;
       item.net = net;
       item.vatRate = vatRate;
       item.vatAmount = vatAmount;
@@ -6703,6 +6732,16 @@ const App = {
       totalQty += qty;
       subtotal += net;
       totalVat += vatAmount;
+
+      // Update row calculation figures in DOM live immediately
+      const netEl = document.getElementById(`row-net-${idx}`);
+      if (netEl) netEl.textContent = net.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const vatEl = document.getElementById(`row-vat-${idx}`);
+      if (vatEl) vatEl.textContent = vatAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const totalEl = document.getElementById(`row-total-${idx}`);
+      if (totalEl) totalEl.textContent = totalWithVat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const rateEl = document.getElementById(`row-vatrate-${idx}`);
+      if (rateEl) rateEl.textContent = isEn ? `${vatRate}%` : `%${vatRate}`;
     });
 
     const additions = parseFloat(document.getElementById('inv-additions')?.value) || 0;
@@ -7142,35 +7181,25 @@ const App = {
         <div class="inv-cust-col">
           <div class="inv-cust-row"><span class="lbl">${lbl.customer}</span> <span>${inv.customer ? inv.customer.name : ''}</span></div>
           <div class="inv-cust-row"><span class="lbl">${lbl.address}</span> <span>${inv.customer ? (inv.customer.address || '') : ''}</span></div>
-          <div class="inv-cust-row"><span class="lbl">${lbl.balance}</span> <span>${inv.customer ? (inv.customer.balance || 'محلي') : 'محلي'}</span></div>
+          <div class="inv-cust-row"><span class="lbl">${lbl.balance}</span> <span>${inv.customer && inv.customer.balance ? inv.customer.balance : '0.00'}</span></div>
         </div>
 
         <div class="inv-cust-col">
-          <div class="inv-cust-row"><span class="lbl">${lbl.taxNumber}</span> <span>${inv.customer ? (inv.customer.taxNumber || 'لايوجد') : 'لايوجد'}</span></div>
-          <div class="inv-cust-row" style="margin-top: 14px;"><span class="lbl">${lbl.destination}</span> <span>${inv.customer ? (inv.customer.destination || 'محلي') : 'محلي'}</span></div>
+          <div class="inv-cust-row"><span class="lbl">${lbl.taxNumber}</span> <span>${inv.customer ? (inv.customer.taxNumber || (pLang === 'en' ? 'N/A' : 'لايوجد')) : (pLang === 'en' ? 'N/A' : 'لايوجد')}</span></div>
+          <div class="inv-cust-row" style="margin-top: 14px;"><span class="lbl">${lbl.destination}</span> <span>${inv.customer ? (inv.customer.destination || (pLang === 'en' ? 'Local' : 'محلي')) : (pLang === 'en' ? 'Local' : 'محلي')}</span></div>
         </div>
 
         <div class="inv-cust-col">
           <div class="inv-cust-row"><span class="lbl">${lbl.crNumber}</span> <span>${inv.customer ? (inv.customer.crNumber || '') : ''}</span></div>
-          <div class="inv-cust-row" style="margin-top: 14px;"><span>${inv.customer ? (inv.customer.representative || lbl.repLabel) : lbl.repLabel}</span></div>
+          <div class="inv-cust-row" style="margin-top: 14px;"><span class="lbl">${lbl.repLabel}</span> <span>${inv.customer ? (inv.customer.representative || '') : ''}</span></div>
         </div>
 
         <div class="inv-cust-col">
-          <div class="inv-cust-row" style="margin-top: 18px;"><span>${inv.customer ? (inv.customer.competitors || lbl.competitorsLabel) : lbl.competitorsLabel}</span></div>
+          <div class="inv-cust-row" style="margin-top: 18px;"><span class="lbl">${lbl.competitorsLabel}</span> <span>${inv.customer ? (inv.customer.competitors || '') : ''}</span></div>
         </div>
       </div>
 
-      <!-- 4. Region Branding Banner -->
-      <div class="inv-region-bar">
-        <div class="inv-region-block b1"></div>
-        <div class="inv-region-block b2">RegionBrn</div>
-        <div class="inv-region-block b3"></div>
-        <div class="inv-region-block b4"></div>
-        <div class="inv-region-block b5"></div>
-        <div class="inv-region-block b6"></div>
-      </div>
-
-      <!-- 5. Main Items Table -->
+      <!-- 4. Main Items Table -->
       <table class="inv-items-table">
         <thead>
           <tr>
@@ -7194,7 +7223,7 @@ const App = {
         </tbody>
       </table>
 
-      <!-- 6. Totals Grid -->
+      <!-- 5. Totals Grid -->
       <div class="inv-totals-grid">
         <!-- Left: Financial Box -->
         <div class="inv-fin-box">
@@ -7224,7 +7253,7 @@ const App = {
           </div>
           <div class="inv-fin-row grand-total">
             <span>${lbl.grandTotal}</span>
-            <span style="font-size: 13px; font-weight: 800;">${fmt(inv.grandTotal)}</span>
+            <span style="font-size: 12px; font-weight: 800;">${fmt(inv.grandTotal)}</span>
           </div>
         </div>
 
@@ -7240,15 +7269,15 @@ const App = {
           </div>
           <div class="inv-mid-card" style="margin-top: 4px;">
             <span>${lbl.totalQty}</span>
-            <span>${fmtQty(inv.totalQuantity)}</span>
+            <span>${fmt(inv.totalQuantity)}</span>
           </div>
         </div>
 
         <!-- Right: Metadata & Notes -->
         <div class="inv-right-meta">
-          <div><span style="font-weight: 700;">${lbl.user}</span> ${inv.user || '10-المدير'}</div>
+          <div><span style="font-weight: 700;">${lbl.user}</span> <bdi dir="auto">${inv.user || '10-المدير'}</bdi></div>
           <div><span style="font-weight: 700;">${lbl.version}</span> ${inv.versionNo || 0}</div>
-          <div style="font-size: 10px; color: #444;">${inv.date} ${inv.time || ''}</div>
+          <div style="font-size: 10px; color: #444;"><span style="font-weight: 700;">${pLang === 'en' ? 'Date & Time:' : (pLang === 'bilingual' ? 'التاريخ والوقت / Date:' : 'التاريخ والوقت:')}</span> ${inv.date} ${inv.time || ''}</div>
           <div style="margin-top: 4px; font-weight: 700;">${lbl.notes}</div>
           <div style="font-size: 10px; color: #333; min-height: 25px;">${inv.notes || ''}</div>
         </div>
