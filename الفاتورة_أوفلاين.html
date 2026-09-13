@@ -5270,7 +5270,6 @@ const App = {
     this.currentInvoice.remainingAmount = remainingAmount;
 
     // Currency Tafqeet
-    const isEn = (typeof I18N !== 'undefined' && I18N.currentLang === 'en');
     const arWords = (typeof Tafqeet !== 'undefined') ? (Tafqeet.toArabicWords ? Tafqeet.toArabicWords(grandTotal) : Tafqeet.convert(grandTotal)) : '';
     const enWords = (typeof Tafqeet !== 'undefined' && Tafqeet.toEnglishWords) ? Tafqeet.toEnglishWords(grandTotal, 'SAR', 'HALALAS') : '';
     const tafqeetDisplay = isEn ? enWords : (arWords + (enWords ? `<div style="font-size:10px;font-weight:normal;color:#64748b;margin-top:2px;">${enWords}</div>` : ''));
