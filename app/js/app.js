@@ -211,6 +211,8 @@ const App = {
     if (custNameEl) custNameEl.value = inv.customer ? (inv.customer.name || '') : '';
     const custTaxEl = document.getElementById('inv-cust-tax');
     if (custTaxEl) custTaxEl.value = inv.customer ? (inv.customer.taxNumber || 'لايوجد') : 'لايوجد';
+    const custPhoneEl = document.getElementById('inv-cust-phone');
+    if (custPhoneEl) custPhoneEl.value = inv.customer ? (inv.customer.phone || '') : '';
     const custCrEl = document.getElementById('inv-cust-cr');
     if (custCrEl) custCrEl.value = inv.customer ? (inv.customer.crNumber || '') : '';
     const custAddrEl = document.getElementById('inv-cust-address');
@@ -277,6 +279,7 @@ const App = {
         id: cust.id,
         name: cust.name,
         taxNumber: cust.taxNumber || 'لايوجد',
+        phone: cust.phone || '',
         crNumber: cust.crNumber || '',
         address: cust.address || '',
         destination: cust.destination || 'محلي',
@@ -289,6 +292,7 @@ const App = {
       };
       setF('inv-cust-name', cust.name);
       setF('inv-cust-tax', cust.taxNumber || 'لايوجد');
+      setF('inv-cust-phone', cust.phone || '');
       setF('inv-cust-cr', cust.crNumber || '');
       setF('inv-cust-address', cust.address || '');
       setF('inv-cust-dest', cust.destination || 'محلي');
@@ -302,6 +306,11 @@ const App = {
     this.currentInvoice.customer.name = name;
   },
 
+  onCustomerFieldInput: function(field, val) {
+    if (!this.currentInvoice.customer) this.currentInvoice.customer = {};
+    this.currentInvoice.customer[field] = val;
+  },
+
   renderInvoiceItemsRows: function() {
     const tbody = document.getElementById('inv-items-body');
     if (!tbody) return;
@@ -312,43 +321,60 @@ const App = {
 
     this.currentInvoice.items.forEach((item, index) => {
       const tr = document.createElement('tr');
+      tr.className = 'inv-item-row';
+      tr.dataset.rowIndex = index;
       tr.innerHTML = `
-        <td style="width: 35px; text-align: center; font-weight: bold; color: #64748b;">${index + 1}</td>
-        <td>
-          <div style="display: flex; flex-direction: column; gap: 4px;">
+        <td class="col-sr-cell" style="width: 35px; text-align: center; font-weight: bold; color: #64748b;">
+          <div class="mobile-row-header">
+            <span class="mobile-row-title">${isEn ? 'Item #' : 'صنف رقم '} ${index + 1}</span>
+            <button type="button" class="btn btn-sm btn-danger mobile-delete-btn" onclick="App.removeItemRow(${index})" title="${isEn ? 'Remove row' : 'حذف السطر'}">
+              ✕ ${isEn ? 'Remove' : 'حذف'}
+            </button>
+          </div>
+          <span class="desktop-item-sr">${index + 1}</span>
+        </td>
+        <td class="col-desc-cell">
+          <div style="display: flex; flex-direction: column; gap: 5px;">
             <select class="form-control form-control-sm item-picker-select" data-index="${index}" style="font-weight: 600; color: #0f172a; background: #f8fafc;">
               <option value="">${isEn ? '-- Select Product from Catalog --' : '-- اختر الصنف من القائمة --'}</option>
               ${products.map(p => `<option value="${p.id}" ${p.code === item.code || p.name === item.description ? 'selected' : ''}>${p.name} (${(p.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR)</option>`).join('')}
               <option value="custom">✏️ ${isEn ? 'Custom / Edit Description below' : 'بيان مخصص (تعديل النص أدناه)'}</option>
             </select>
-            <input type="text" class="form-control form-control-sm item-desc-input" data-index="${index}" value="${item.description || ''}" placeholder="${isEn ? 'Item description / Name' : 'اسم الصنف / البيان'}" style="font-size: 13px;">
+            <input type="text" class="form-control form-control-sm item-desc-input" data-index="${index}" value="${item.description || ''}" placeholder="${isEn ? 'Item description / Name' : 'اسم الصنف / البيان'}" style="font-size: 13.5px;">
             <input type="hidden" class="item-code-input" data-index="${index}" value="${item.code || ''}">
           </div>
         </td>
-        <td style="width: 85px;">
+        <td class="col-unit-cell" style="width: 85px;">
+          <label class="mobile-field-label">${isEn ? 'Unit' : 'الوحدة'}</label>
           <input type="text" class="form-control form-control-sm item-unit-input" data-index="${index}" value="${item.unit || (isEn ? 'Carton' : 'كرتون')}" placeholder="Unit">
         </td>
-        <td style="width: 100px;">
-          <input type="number" step="0.01" min="0" class="form-control form-control-sm item-price-input" data-index="${index}" value="${item.price !== undefined ? item.price : 0}" style="text-align: center; font-weight: 600;">
+        <td class="col-price-cell" style="width: 105px;">
+          <label class="mobile-field-label">${isEn ? 'Unit Price (SAR)' : 'سعر الوحدة'}</label>
+          <input type="number" step="any" min="0" class="form-control form-control-sm item-price-input" data-index="${index}" value="${item.price !== undefined ? item.price : 0}" style="text-align: center; font-weight: 700;">
         </td>
-        <td style="width: 95px;">
+        <td class="col-qty-cell" style="width: 100px;">
+          <label class="mobile-field-label">${isEn ? 'QTY (الكمية)' : 'الكمية'}</label>
           <input type="number" step="any" min="0" class="form-control form-control-sm item-qty-input" data-index="${index}" value="${item.quantity !== undefined ? item.quantity : 1}" style="text-align: center;">
         </td>
-        <td style="width: 90px; text-align: center; font-weight: bold; color: #002060;">
-          ${(item.net || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        <td class="col-net-cell" style="width: 90px; text-align: center; font-weight: bold; color: #002060;">
+          <label class="mobile-field-label">${isEn ? 'Net Total' : 'قبل الضريبة'}</label>
+          <span class="row-calc-net" id="row-net-${index}">${(item.net || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </td>
-        <td style="width: 60px; text-align: center; color: #64748b; font-size: 12px;">
-          15%
+        <td class="col-vatrate-cell" style="width: 60px; text-align: center; color: #64748b; font-size: 12px;">
+          <label class="mobile-field-label">${isEn ? 'VAT %' : 'نسبة الضريبة'}</label>
+          <span>15%</span>
           <input type="hidden" class="item-vat-val" data-index="${index}" value="15">
         </td>
-        <td style="width: 85px; text-align: center; color: #b91c1c; font-weight: 600;">
-          ${(item.vatAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        <td class="col-vatamt-cell" style="width: 85px; text-align: center; color: #b91c1c; font-weight: 600;">
+          <label class="mobile-field-label">${isEn ? 'VAT (15%)' : 'ضريبة (15%)'}</label>
+          <span class="row-calc-vat" id="row-vat-${index}">${(item.vatAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </td>
-        <td style="width: 110px; text-align: center; font-weight: bold; background-color: #f8fafc; color: #0284c7;">
-          ${(item.totalWithVat || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        <td class="col-total-cell" style="width: 110px; text-align: center; font-weight: bold; background-color: #f0f9ff; color: #0284c7;">
+          <label class="mobile-field-label">${isEn ? 'Total (Inc. VAT)' : 'الإجمالي شامل الضريبة'}</label>
+          <span class="row-calc-total" id="row-total-${index}">${(item.totalWithVat || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </td>
-        <td style="width: 40px; text-align: center;">
-          <button type="button" class="btn btn-sm btn-outline btn-danger-icon" onclick="App.removeItemRow(${index})" title="${isEn ? 'Remove row' : 'حذف السطر'}">
+        <td class="col-action-cell" style="width: 40px; text-align: center;">
+          <button type="button" class="btn btn-sm btn-outline btn-danger-icon desktop-delete-btn" onclick="App.removeItemRow(${index})" title="${isEn ? 'Remove row' : 'حذف السطر'}">
             ✕
           </button>
         </td>
@@ -364,7 +390,9 @@ const App = {
     document.querySelectorAll('.item-desc-input').forEach(input => {
       input.addEventListener('input', (e) => {
         const idx = parseInt(e.target.dataset.index);
-        this.currentInvoice.items[idx].description = e.target.value;
+        if (this.currentInvoice.items[idx]) {
+          this.currentInvoice.items[idx].description = e.target.value;
+        }
       });
     });
 
@@ -372,25 +400,69 @@ const App = {
     document.querySelectorAll('.item-unit-input').forEach(input => {
       input.addEventListener('input', (e) => {
         const idx = parseInt(e.target.dataset.index);
-        this.currentInvoice.items[idx].unit = e.target.value;
+        if (this.currentInvoice.items[idx]) {
+          this.currentInvoice.items[idx].unit = e.target.value;
+        }
       });
     });
 
-    // Quantity input (Immediate Live Recalculation)
+    // Instant Live Recalculation on Quantity Keystroke
     document.querySelectorAll('.item-qty-input').forEach(input => {
       input.addEventListener('input', (e) => {
         const idx = parseInt(e.target.dataset.index);
-        this.currentInvoice.items[idx].quantity = parseFloat(e.target.value) || 0;
-        this.recalculateInvoice();
+        if (this.currentInvoice.items[idx]) {
+          const qty = parseFloat(e.target.value) || 0;
+          const price = parseFloat(this.currentInvoice.items[idx].price) || 0;
+          const net = qty * price;
+          const vat = net * 0.15;
+          const total = net + vat;
+
+          this.currentInvoice.items[idx].quantity = qty;
+          this.currentInvoice.items[idx].net = net;
+          this.currentInvoice.items[idx].vatRate = 15;
+          this.currentInvoice.items[idx].vatAmount = vat;
+          this.currentInvoice.items[idx].totalWithVat = total;
+
+          // Update row calculation figures in DOM live immediately
+          const netEl = document.getElementById(`row-net-${idx}`);
+          if (netEl) netEl.textContent = net.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const vatEl = document.getElementById(`row-vat-${idx}`);
+          if (vatEl) vatEl.textContent = vat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const totalEl = document.getElementById(`row-total-${idx}`);
+          if (totalEl) totalEl.textContent = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+          this.recalculateInvoice();
+        }
       });
     });
 
-    // Price input (Immediate Live Recalculation)
+    // Instant Live Recalculation on Price Keystroke
     document.querySelectorAll('.item-price-input').forEach(input => {
       input.addEventListener('input', (e) => {
         const idx = parseInt(e.target.dataset.index);
-        this.currentInvoice.items[idx].price = parseFloat(e.target.value) || 0;
-        this.recalculateInvoice();
+        if (this.currentInvoice.items[idx]) {
+          const price = parseFloat(e.target.value) || 0;
+          const qty = parseFloat(this.currentInvoice.items[idx].quantity) || 0;
+          const net = qty * price;
+          const vat = net * 0.15;
+          const total = net + vat;
+
+          this.currentInvoice.items[idx].price = price;
+          this.currentInvoice.items[idx].net = net;
+          this.currentInvoice.items[idx].vatRate = 15;
+          this.currentInvoice.items[idx].vatAmount = vat;
+          this.currentInvoice.items[idx].totalWithVat = total;
+
+          // Update row calculation figures in DOM live immediately
+          const netEl = document.getElementById(`row-net-${idx}`);
+          if (netEl) netEl.textContent = net.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const vatEl = document.getElementById(`row-vat-${idx}`);
+          if (vatEl) vatEl.textContent = vat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const totalEl = document.getElementById(`row-total-${idx}`);
+          if (totalEl) totalEl.textContent = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+          this.recalculateInvoice();
+        }
       });
     });
 
@@ -401,7 +473,7 @@ const App = {
         const prodId = e.target.value;
         if (prodId && prodId !== 'custom') {
           const prod = DB.getProducts().find(p => p.id === prodId);
-          if (prod) {
+          if (prod && this.currentInvoice.items[idx]) {
             this.currentInvoice.items[idx].code = prod.code || '';
             this.currentInvoice.items[idx].description = prod.name;
             this.currentInvoice.items[idx].unit = prod.unit || 'كرتون';
@@ -441,7 +513,7 @@ const App = {
     this.renderInvoiceItemsRows();
     this.recalculateInvoice();
 
-    // Focus the newly added row
+    // Focus the newly added row's product selector
     setTimeout(() => {
       const selects = document.querySelectorAll('.item-picker-select');
       if (selects.length > 0) {
@@ -575,10 +647,11 @@ const App = {
     inv.customer = {
       id: document.getElementById('inv-customer-picker')?.value || '',
       name: document.getElementById('inv-cust-name')?.value || 'Cash Customer',
-      taxNumber: document.getElementById('inv-cust-tax')?.value || 'N/A',
+      taxNumber: document.getElementById('inv-cust-tax')?.value || 'لايوجد',
+      phone: document.getElementById('inv-cust-phone')?.value || '',
       crNumber: document.getElementById('inv-cust-cr')?.value || '',
       address: document.getElementById('inv-cust-address')?.value || '',
-      destination: document.getElementById('inv-cust-dest')?.value || 'Local',
+      destination: document.getElementById('inv-cust-dest')?.value || 'محلي',
       representative: document.getElementById('inv-cust-rep')?.value || '',
       balance: document.getElementById('inv-cust-balance')?.value || ''
     };

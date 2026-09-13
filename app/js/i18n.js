@@ -197,25 +197,29 @@ const I18N = {
       en: 'Commercial Reg. (CR No.)',
       ar: 'السجل التجاري'
     },
+    lblCustomerPhone: {
+      en: 'Customer Phone / Mobile',
+      ar: 'رقم جوال / هاتف العميل'
+    },
     lblCustomerDest: {
       en: 'Destination / City',
-      ar: 'الوجهة'
+      ar: 'المدينة / الوجهة'
     },
     lblCustomerAddress: {
       en: 'Customer Address',
-      ar: 'العنوان'
+      ar: 'العنوان بالتفصيل'
     },
     lblCustomerRep: {
       en: 'Customer Representative',
       ar: 'ممثل العميل'
     },
     step1Heading: {
-      en: 'Customer Name / Select Customer',
-      ar: 'اسم العميل / اختيار عميل'
+      en: 'Customer & Client Information',
+      ar: 'بيانات العميل (الاسم، الضريبة، الجوال، العنوان)'
     },
     lblMoreDetailsSummary: {
-      en: '⚙️ Optional Document & Customer Details (Address, Tax No, CR No, Sales Rep, Warehouse) - [Prefixed]',
-      ar: '⚙️ تفاصيل اختيارية للمستند والعميل (العنوان، الضريبة، السجل، المندوب، المستودع) - [محددة مسبقاً]'
+      en: '⚙️ Optional System Defaults & References (Sales Rep, Warehouse, Cost Center, Hijri Date) - [Prefixed]',
+      ar: '⚙️ إعدادات النظام والمراجع الاختيارية (المندوب، المستودع، مركز التكلفة، التاريخ الهجري) - [افتراضي]'
     },
     titleSelectProduct: {
       en: 'Select Product From Catalog',

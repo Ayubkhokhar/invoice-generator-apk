@@ -1002,22 +1002,74 @@ textarea.form-control {
 /* --------------------------------------------------------------------------
    Responsive Mobile Adjustments
    -------------------------------------------------------------------------- */
-@media (max-width: 640px) {
+@media (min-width: 769px) {
+  .mobile-row-header,
+  .mobile-field-label,
+  .mobile-delete-btn {
+    display: none !important;
+  }
+  .desktop-item-sr {
+    display: inline !important;
+  }
+  .desktop-delete-btn {
+    display: inline-flex !important;
+  }
+}
+
+@media (max-width: 768px) {
   .app-header {
-    padding: 8px 12px;
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .brand-section {
+    gap: 6px;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .app-logo-badge {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+    border-radius: 6px;
+  }
+
+  .brand-text-wrap {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
   }
 
   .brand-title {
-    font-size: 14px;
+    font-size: 13.5px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .brand-subtitle {
-    display: none;
+    display: none !important;
+  }
+
+  .header-actions {
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .lang-pill-btn {
+    padding: 3px 7px;
+    font-size: 11px;
   }
 
   .btn-header {
     padding: 5px 8px;
     font-size: 11.5px;
+  }
+
+  .btn-header-label {
+    display: none;
   }
 
   .main-container {
@@ -1048,6 +1100,137 @@ textarea.form-control {
 
   .print-format-group {
     justify-content: center;
+  }
+
+  /* Table Transform into Touch-Friendly Mobile Cards */
+  .table-responsive {
+    border: none;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .app-table thead {
+    display: none;
+  }
+
+  .app-table, .app-table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .inv-item-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    grid-template-areas:
+      "header header header"
+      "desc desc desc"
+      "unit price qty"
+      "calc-net calc-vat calc-total" !important;
+    background: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 10px !important;
+    margin-bottom: 14px !important;
+    padding: 12px 14px !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .inv-item-row td {
+    display: block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    border: none !important;
+    text-align: start !important;
+  }
+
+  .desktop-item-sr,
+  .desktop-delete-btn,
+  .col-action-cell,
+  .col-vatrate-cell {
+    display: none !important;
+  }
+
+  .col-sr-cell {
+    grid-area: header !important;
+  }
+
+  .col-desc-cell {
+    grid-area: desc !important;
+  }
+
+  .col-unit-cell {
+    grid-area: unit !important;
+    width: 100% !important;
+  }
+
+  .col-price-cell {
+    grid-area: price !important;
+    width: 100% !important;
+  }
+
+  .col-qty-cell {
+    grid-area: qty !important;
+    width: 100% !important;
+  }
+
+  .col-net-cell {
+    grid-area: calc-net !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important;
+    padding: 6px 8px !important;
+    text-align: center !important;
+  }
+
+  .col-vatamt-cell {
+    grid-area: calc-vat !important;
+    background: #fef2f2 !important;
+    border: 1px solid #fecaca !important;
+    border-radius: 6px !important;
+    padding: 6px 8px !important;
+    text-align: center !important;
+  }
+
+  .col-total-cell {
+    grid-area: calc-total !important;
+    background: #e0f2fe !important;
+    border: 1px solid #bae6fd !important;
+    border-radius: 6px !important;
+    padding: 6px 8px !important;
+    text-align: center !important;
+    font-weight: 800 !important;
+  }
+
+  .mobile-row-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    padding-bottom: 6px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  .mobile-row-title {
+    font-weight: 800 !important;
+    font-size: 14px !important;
+    color: #0284c7 !important;
+  }
+
+  .mobile-delete-btn {
+    display: inline-flex !important;
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
+  }
+
+  .mobile-field-label {
+    display: block !important;
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    color: #64748b !important;
+    margin-bottom: 3px !important;
+    text-transform: uppercase;
   }
 }
 
