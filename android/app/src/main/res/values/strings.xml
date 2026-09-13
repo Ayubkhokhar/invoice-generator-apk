@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MayarInvoices</string>
+    <string name="title_activity_main">MayarInvoices</string>
+    <string name="package_name">com.mayar.invoices</string>
+    <string name="custom_url_scheme">com.mayar.invoices</string>
+</resources>
