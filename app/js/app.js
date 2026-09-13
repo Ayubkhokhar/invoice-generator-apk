@@ -362,11 +362,11 @@ const App = {
         </td>
         <td class="col-vatrate-cell" style="width: 60px; text-align: center; color: #64748b; font-size: 12px;">
           <label class="mobile-field-label">${isEn ? 'VAT %' : 'نسبة الضريبة'}</label>
-          <span>15%</span>
-          <input type="hidden" class="item-vat-val" data-index="${index}" value="15">
+          <span id="row-vatrate-${index}">%${(item.vatRate !== undefined && item.vatRate !== null) ? item.vatRate : 15}</span>
+          <input type="hidden" class="item-vat-val" data-index="${index}" value="${(item.vatRate !== undefined && item.vatRate !== null) ? item.vatRate : 15}">
         </td>
         <td class="col-vatamt-cell" style="width: 85px; text-align: center; color: #b91c1c; font-weight: 600;">
-          <label class="mobile-field-label">${isEn ? 'VAT (15%)' : 'ضريبة (15%)'}</label>
+          <label class="mobile-field-label">${isEn ? 'VAT' : 'الضريبة'} (%<span id="row-vat-rate-label-${index}">${(item.vatRate !== undefined && item.vatRate !== null) ? item.vatRate : 15}</span>)</label>
           <span class="row-calc-vat" id="row-vat-${index}">${(item.vatAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </td>
         <td class="col-total-cell" style="width: 110px; text-align: center; font-weight: bold; background-color: #f0f9ff; color: #0284c7;">
@@ -413,13 +413,16 @@ const App = {
         if (this.currentInvoice.items[idx]) {
           const qty = parseFloat(e.target.value) || 0;
           const price = parseFloat(this.currentInvoice.items[idx].price) || 0;
+          const vatRate = (this.currentInvoice.items[idx].vatRate !== undefined && this.currentInvoice.items[idx].vatRate !== null && !isNaN(parseFloat(this.currentInvoice.items[idx].vatRate)))
+            ? parseFloat(this.currentInvoice.items[idx].vatRate)
+            : (DB.getSettings().defaultVatRate !== undefined ? DB.getSettings().defaultVatRate : 15);
           const net = qty * price;
-          const vat = net * 0.15;
+          const vat = net * (vatRate / 100);
           const total = net + vat;
 
           this.currentInvoice.items[idx].quantity = qty;
           this.currentInvoice.items[idx].net = net;
-          this.currentInvoice.items[idx].vatRate = 15;
+          this.currentInvoice.items[idx].vatRate = vatRate;
           this.currentInvoice.items[idx].vatAmount = vat;
           this.currentInvoice.items[idx].totalWithVat = total;
 
@@ -443,13 +446,16 @@ const App = {
         if (this.currentInvoice.items[idx]) {
           const price = parseFloat(e.target.value) || 0;
           const qty = parseFloat(this.currentInvoice.items[idx].quantity) || 0;
+          const vatRate = (this.currentInvoice.items[idx].vatRate !== undefined && this.currentInvoice.items[idx].vatRate !== null && !isNaN(parseFloat(this.currentInvoice.items[idx].vatRate)))
+            ? parseFloat(this.currentInvoice.items[idx].vatRate)
+            : (DB.getSettings().defaultVatRate !== undefined ? DB.getSettings().defaultVatRate : 15);
           const net = qty * price;
-          const vat = net * 0.15;
+          const vat = net * (vatRate / 100);
           const total = net + vat;
 
           this.currentInvoice.items[idx].price = price;
           this.currentInvoice.items[idx].net = net;
-          this.currentInvoice.items[idx].vatRate = 15;
+          this.currentInvoice.items[idx].vatRate = vatRate;
           this.currentInvoice.items[idx].vatAmount = vat;
           this.currentInvoice.items[idx].totalWithVat = total;
 
@@ -474,11 +480,12 @@ const App = {
         if (prodId && prodId !== 'custom') {
           const prod = DB.getProducts().find(p => p.id === prodId);
           if (prod && this.currentInvoice.items[idx]) {
+            const pVat = (prod.vatRate !== undefined && prod.vatRate !== null && !isNaN(parseFloat(prod.vatRate))) ? parseFloat(prod.vatRate) : (DB.getSettings().defaultVatRate || 15);
             this.currentInvoice.items[idx].code = prod.code || '';
             this.currentInvoice.items[idx].description = prod.name;
             this.currentInvoice.items[idx].unit = prod.unit || 'كرتون';
             this.currentInvoice.items[idx].price = prod.price || 0;
-            this.currentInvoice.items[idx].vatRate = prod.vatRate || 15;
+            this.currentInvoice.items[idx].vatRate = pVat;
             
             // Re-render and automatically focus the QTY field!
             this.renderInvoiceItemsRows();
@@ -498,6 +505,7 @@ const App = {
   },
 
   addItemRow: function() {
+    const defaultVat = (DB.getSettings().defaultVatRate !== undefined && DB.getSettings().defaultVatRate !== null && !isNaN(parseFloat(DB.getSettings().defaultVatRate))) ? parseFloat(DB.getSettings().defaultVatRate) : 15;
     this.currentInvoice.items.push({
       sr: this.currentInvoice.items.length + 1,
       code: '',
@@ -506,7 +514,7 @@ const App = {
       quantity: 1,
       price: 0,
       net: 0,
-      vatRate: 15,
+      vatRate: defaultVat,
       vatAmount: 0,
       totalWithVat: 0
     });
@@ -541,11 +549,13 @@ const App = {
     let subtotal = 0;
     let totalVat = 0;
 
+    const defaultVat = (DB.getSettings().defaultVatRate !== undefined && DB.getSettings().defaultVatRate !== null && !isNaN(parseFloat(DB.getSettings().defaultVatRate))) ? parseFloat(DB.getSettings().defaultVatRate) : 15;
+
     this.currentInvoice.items.forEach((item, idx) => {
       item.sr = idx + 1;
       const qty = parseFloat(item.quantity) || 0;
       const price = parseFloat(item.price) || 0;
-      const vatRate = 15; // Standard 15% VAT
+      const vatRate = (item.vatRate !== undefined && item.vatRate !== null && !isNaN(parseFloat(item.vatRate))) ? parseFloat(item.vatRate) : defaultVat;
 
       const net = qty * price;
       const vatAmount = net * (vatRate / 100);
@@ -908,7 +918,7 @@ const App = {
         <td style="width: 50px; text-align: center;">${fmt(item.quantity)}</td>
         <td style="width: 55px; text-align: center;">${fmt(item.price)}</td>
         <td class="blue-net" style="width: 65px; text-align: center;">${fmt(item.net)}</td>
-        <td style="width: 32px; text-align: center; font-size: 10px;">%${item.vatRate || 15}</td>
+        <td style="width: 32px; text-align: center; font-size: 10px;">%${(item.vatRate !== undefined && item.vatRate !== null) ? item.vatRate : 15}</td>
         <td style="width: 55px; text-align: center;">${fmt(item.vatAmount)}</td>
         <td style="width: 65px; text-align: center; font-weight: 700;">${fmt(item.totalWithVat)}</td>
       </tr>
@@ -1374,6 +1384,9 @@ const App = {
       return;
     }
 
+    const rawVat = document.getElementById('prod-vat')?.value;
+    const vatRate = (rawVat !== undefined && rawVat !== '' && !isNaN(parseFloat(rawVat))) ? parseFloat(rawVat) : 15;
+
     const prod = {
       id: document.getElementById('prod-id')?.value || null,
       code: document.getElementById('prod-code')?.value.trim() || '',
@@ -1381,7 +1394,7 @@ const App = {
       category: document.getElementById('prod-category')?.value.trim() || 'General',
       unit: document.getElementById('prod-unit')?.value.trim() || 'كرتون',
       price: parseFloat(document.getElementById('prod-price')?.value) || 0,
-      vatRate: parseFloat(document.getElementById('prod-vat')?.value) || 15
+      vatRate: vatRate
     };
 
     DB.saveProduct(prod);
@@ -1473,13 +1486,18 @@ const App = {
     const prod = DB.getProducts().find(p => p.id === productId);
     if (!prod) return;
 
+    const pVat = (prod.vatRate !== undefined && prod.vatRate !== null && !isNaN(parseFloat(prod.vatRate)))
+      ? parseFloat(prod.vatRate)
+      : (DB.getSettings().defaultVatRate !== undefined ? DB.getSettings().defaultVatRate : 15);
+    const pPrice = parseFloat(prod.price) || 0;
+
     const targetIdx = this.pickerTargetIndex;
     if (targetIdx !== null && targetIdx !== undefined && this.currentInvoice.items[targetIdx]) {
       this.currentInvoice.items[targetIdx].code = prod.code || '';
       this.currentInvoice.items[targetIdx].description = prod.name;
       this.currentInvoice.items[targetIdx].unit = prod.unit || 'كرتون';
-      this.currentInvoice.items[targetIdx].price = prod.price || 0;
-      this.currentInvoice.items[targetIdx].vatRate = prod.vatRate || 15;
+      this.currentInvoice.items[targetIdx].price = pPrice;
+      this.currentInvoice.items[targetIdx].vatRate = pVat;
     } else {
       // If the first row is empty, populate it; otherwise push new row
       const firstItem = this.currentInvoice.items[0];
@@ -1487,21 +1505,23 @@ const App = {
         firstItem.code = prod.code || '';
         firstItem.description = prod.name;
         firstItem.unit = prod.unit || 'كرتون';
-        firstItem.price = prod.price || 0;
+        firstItem.price = pPrice;
         firstItem.quantity = 1;
-        firstItem.vatRate = prod.vatRate || 15;
+        firstItem.vatRate = pVat;
       } else {
+        const net = pPrice * 1;
+        const vatAmt = net * (pVat / 100);
         this.currentInvoice.items.push({
           sr: this.currentInvoice.items.length + 1,
           code: prod.code || '',
           description: prod.name,
           unit: prod.unit || 'كرتون',
           quantity: 1,
-          price: prod.price || 0,
-          net: prod.price || 0,
-          vatRate: 15,
-          vatAmount: (prod.price || 0) * 0.15,
-          totalWithVat: (prod.price || 0) * 1.15
+          price: pPrice,
+          net: net,
+          vatRate: pVat,
+          vatAmount: vatAmt,
+          totalWithVat: net + vatAmt
         });
       }
     }
@@ -1772,7 +1792,10 @@ const App = {
       warehouse: getFld('setting-warehouse', 'setting-warehouse', prev.warehouse),
       salesRep: getFld('setting-sales-rep', 'setting-sales-rep', prev.salesRep),
       currency: getFld('setting-currency', 'setting-currency', prev.currency || 'SR ريال'),
-      defaultVatRate: parseFloat(getFld('setting-vat', 'setting-vat', '15')) || 15,
+      defaultVatRate: (() => {
+        const v = getFld('setting-vat', 'setting-vat', '15');
+        return (v !== undefined && v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : 15;
+      })(),
       nextQuotationNumber: parseInt(getFld('setting-next-quotation', 'setting-next-quote', '1')) || 1,
       nextInvoiceNumber: parseInt(getFld('setting-next-invoice', 'setting-next-inv', '1')) || 1,
       showZatcaQr: (document.getElementById('setting-show-zatca-qr') || document.getElementById('setting-show-qr'))?.checked !== false,

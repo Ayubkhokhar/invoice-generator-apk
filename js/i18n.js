@@ -340,8 +340,8 @@ const I18N = {
       ar: 'الصافي (بعد الخصم):'
     },
     lblVatSummary: {
-      en: 'VAT Amount (15%):',
-      ar: 'إجمالي ضريبة القيمة المضافة (%15):'
+      en: 'Total VAT Amount:',
+      ar: 'إجمالي ضريبة القيمة المضافة:'
     },
     lblGrandTotalSummary: {
       en: 'Grand Total (Inc. VAT):',
@@ -673,7 +673,7 @@ const I18N = {
       grossTotal: 'Gross Total',
       discount: 'Discount',
       netTotal: 'Net Total',
-      vatRow: 'Total VAT (15%)',
+      vatRow: 'Total VAT',
       grandTotal: 'Grand Total (Inc. VAT)',
       paid: 'Paid Amount',
       remaining: 'Remaining Due',
@@ -729,7 +729,7 @@ const I18N = {
       grossTotal: 'الإجمالي الكلي / Gross Total',
       discount: 'الخصم / Discount',
       netTotal: 'الصافي / Net Total',
-      vatRow: 'ضريبة القيمة المضافة / VAT (15%)',
+      vatRow: 'ضريبة القيمة المضافة / Total VAT',
       grandTotal: 'الصافي شامل الضريبة / Grand Total',
       paid: 'المدفوع / Paid',
       remaining: 'المتبقي / Balance',
@@ -785,7 +785,7 @@ const I18N = {
       grossTotal: 'الاجمالي الكلي',
       discount: 'الخصـم',
       netTotal: 'الصـافي',
-      vatRow: 'إجمالي ضريبة القيمة المضافة 15 %',
+      vatRow: 'إجمالي ضريبة القيمة المضافة',
       grandTotal: 'الصافي شامل ض.ق VAT',
       paid: 'المدفوع',
       remaining: 'المتبقي',
