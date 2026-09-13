@@ -1137,6 +1137,9 @@ const App = {
   // -------------------------------------------------------------------------
   // INVOICES LIST VIEW
   // -------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // INVOICES LIST VIEW
+  // -------------------------------------------------------------------------
   renderInvoicesList: function() {
     const listContainer = document.getElementById('invoices-table-body');
     if (!listContainer) return;
@@ -1157,35 +1160,59 @@ const App = {
         ? (isEn ? 'Paid in Full' : 'مدفوع بالكامل')
         : ((isEn ? 'Due: ' : 'متبقي: ') + (inv.remainingAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }));
       const statusColor = inv.remainingAmount <= 0 ? '#059669' : '#d97706';
+      const custName = inv.customer && inv.customer.name ? inv.customer.name : (isEn ? 'Cash Customer' : 'عميل نقدي');
 
       return `
-        <tr>
-          <td style="font-weight: bold;">${inv.number}</td>
-          <td>
-            <span class="badge ${inv.type === 'quotation' ? 'badge-info' : 'badge-primary'}" style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+        <tr class="app-list-row invoice-list-row" onclick="App.printInvoice('${inv.id}')">
+          <td class="col-docno" style="font-weight: bold;">
+            <div class="mobile-card-header">
+              <span class="mobile-docno-badge">#${inv.number}</span>
+              <span class="badge ${inv.type === 'quotation' ? 'badge-info' : 'badge-primary'} mobile-type-badge">
+                ${typeLabel}
+              </span>
+              <span class="mobile-date-text">${inv.date}</span>
+            </div>
+            <span class="desktop-cell-text">${inv.number}</span>
+          </td>
+          <td class="col-doctype desktop-only-cell">
+            <span class="badge ${inv.type === 'quotation' ? 'badge-info' : 'badge-primary'}">
               ${typeLabel}
             </span>
           </td>
-          <td>${inv.date}</td>
-          <td style="font-weight: 600;">${inv.customer ? inv.customer.name : ''}</td>
-          <td style="font-weight: bold; color: #002060;">${(inv.grandTotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR</td>
-          <td>
-            <span style="font-size: 12px; font-weight: 600; color: ${statusColor}">
-              ${statusText}
-            </span>
+          <td class="col-docdate desktop-only-cell">${inv.date}</td>
+          <td class="col-customer">
+            <div class="mobile-field-row">
+              <span class="mobile-field-label">${isEn ? 'Customer' : 'العميل'}:</span>
+              <span class="customer-name-val">${custName}</span>
+            </div>
+            <span class="desktop-cell-text">${custName}</span>
           </td>
-          <td>
-            <div style="display: flex; gap: 6px; justify-content: flex-end;">
-              <button class="btn btn-sm btn-primary" onclick="App.printInvoice('${inv.id}')" title="${isEn ? 'View & Print' : 'عرض وطباعة'}">
-                🖨️ ${isEn ? 'View' : 'طباعة'}
+          <td class="col-grandtotal">
+            <div class="mobile-field-row">
+              <span class="mobile-field-label">${isEn ? 'Total' : 'الإجمالي'}:</span>
+              <span class="grand-total-val">${(inv.grandTotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR</span>
+            </div>
+            <span class="desktop-cell-text" style="font-weight: bold; color: #002060;">${(inv.grandTotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR</span>
+          </td>
+          <td class="col-status">
+            <div class="mobile-field-row">
+              <span class="mobile-field-label">${isEn ? 'Status' : 'الحالة'}:</span>
+              <span style="font-size: 12px; font-weight: 700; color: ${statusColor}">● ${statusText}</span>
+            </div>
+            <span class="desktop-cell-text" style="font-size: 12px; font-weight: 600; color: ${statusColor}">${statusText}</span>
+          </td>
+          <td class="col-actions">
+            <div class="card-actions-wrapper" onclick="event.stopPropagation()">
+              <button type="button" class="btn btn-sm btn-primary action-btn-main" onclick="event.stopPropagation(); App.printInvoice('${inv.id}')" title="${isEn ? 'View & Print' : 'عرض وطباعة'}">
+                🖨️ ${isEn ? 'View / Print' : 'عرض وطباعة'}
               </button>
-              <button class="btn btn-sm btn-outline" onclick="App.editInvoice('${inv.id}')" title="${isEn ? 'Edit' : 'تعديل'}">
-                ✏️
+              <button type="button" class="btn btn-sm btn-outline action-btn-sec" onclick="event.stopPropagation(); App.editInvoice('${inv.id}')" title="${isEn ? 'Edit' : 'تعديل'}">
+                ✏️ ${isEn ? 'Edit' : 'تعديل'}
               </button>
-              <button class="btn btn-sm btn-outline" onclick="App.duplicateInvoice('${inv.id}')" title="${isEn ? 'Duplicate' : 'نسخ'}">
+              <button type="button" class="btn btn-sm btn-outline action-btn-sec" onclick="event.stopPropagation(); App.duplicateInvoice('${inv.id}')" title="${isEn ? 'Duplicate' : 'نسخ'}">
                 📄
               </button>
-              <button class="btn btn-sm btn-danger" onclick="App.deleteInvoice('${inv.id}')" title="${isEn ? 'Delete' : 'حذف'}">
+              <button type="button" class="btn btn-sm btn-danger action-btn-sec" onclick="event.stopPropagation(); App.deleteInvoice('${inv.id}')" title="${isEn ? 'Delete' : 'حذف'}">
                 🗑️
               </button>
             </div>
@@ -1242,17 +1269,46 @@ const App = {
     }
 
     tbody.innerHTML = products.map(p => `
-      <tr>
-        <td style="font-weight: bold; color: #0284c7;">${p.code || '-'}</td>
-        <td style="font-weight: 600;">${p.name}</td>
-        <td><span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px;">${p.category || 'General'}</span></td>
-        <td>${p.unit || (isEn ? 'Carton' : 'كرتون')}</td>
-        <td style="font-weight: bold;">${(p.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR</td>
-        <td>%${p.vatRate !== undefined ? p.vatRate : 15}</td>
-        <td>
-          <div style="display: flex; gap: 6px; justify-content: flex-end;">
-            <button class="btn btn-sm btn-outline" onclick="App.openEditProductModal('${p.id}')">${isEn ? 'Edit' : 'تعديل'}</button>
-            <button class="btn btn-sm btn-danger" onclick="App.deleteProduct('${p.id}')">${isEn ? 'Delete' : 'حذف'}</button>
+      <tr class="app-list-row product-list-row" onclick="App.openEditProductModal('${p.id}')">
+        <td class="col-sku" style="font-weight: bold; color: #0284c7;">
+          <div class="mobile-card-header">
+            <span class="mobile-sku-badge">#${p.code || '-'}</span>
+            <span class="mobile-prod-title">${p.name}</span>
+            <span class="mobile-category-pill">${p.category || (isEn ? 'General' : 'عام')}</span>
+          </div>
+          <span class="desktop-cell-text">${p.code || '-'}</span>
+        </td>
+        <td class="col-prodname desktop-only-cell" style="font-weight: 600;">${p.name}</td>
+        <td class="col-category desktop-only-cell"><span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px;">${p.category || (isEn ? 'General' : 'عام')}</span></td>
+        <td class="col-unit">
+          <div class="mobile-field-row">
+            <span class="mobile-field-label">${isEn ? 'Unit' : 'الوحدة'}:</span>
+            <span>${p.unit || (isEn ? 'Carton' : 'كرتون')}</span>
+          </div>
+          <span class="desktop-cell-text">${p.unit || (isEn ? 'Carton' : 'كرتون')}</span>
+        </td>
+        <td class="col-price">
+          <div class="mobile-field-row">
+            <span class="mobile-field-label">${isEn ? 'Base Price' : 'السعر'}:</span>
+            <span style="font-weight: 800; color: #0284c7;">${(p.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR</span>
+          </div>
+          <span class="desktop-cell-text" style="font-weight: bold;">${(p.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR</span>
+        </td>
+        <td class="col-vatrate">
+          <div class="mobile-field-row">
+            <span class="mobile-field-label">${isEn ? 'VAT %' : 'الضريبة'}:</span>
+            <span>%${p.vatRate !== undefined ? p.vatRate : 15}</span>
+          </div>
+          <span class="desktop-cell-text">%${p.vatRate !== undefined ? p.vatRate : 15}</span>
+        </td>
+        <td class="col-actions">
+          <div class="card-actions-wrapper" onclick="event.stopPropagation()">
+            <button type="button" class="btn btn-sm btn-primary action-btn-main" onclick="event.stopPropagation(); App.openEditProductModal('${p.id}')">
+              ✏️ ${isEn ? 'Edit Product' : 'تعديل المنتج'}
+            </button>
+            <button type="button" class="btn btn-sm btn-danger action-btn-sec" onclick="event.stopPropagation(); App.deleteProduct('${p.id}')">
+              🗑️ ${isEn ? 'Delete' : 'حذف'}
+            </button>
           </div>
         </td>
       </tr>
@@ -1381,14 +1437,32 @@ const App = {
     }
 
     tbody.innerHTML = filtered.map(p => `
-      <tr>
-        <td style="font-weight:700; color:#0284c7;">${p.code || '-'}</td>
-        <td style="font-weight:600;">${p.name}</td>
-        <td>${p.unit || (isEn ? 'Carton' : 'كرتون')}</td>
-        <td style="font-weight:700; text-align:center;">${(p.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR</td>
-        <td style="text-align:center;">
-          <button type="button" class="btn btn-sm btn-primary" onclick="App.selectProductFromPicker('${p.id}')">
-            ➕ ${isEn ? 'Select' : 'اختيار'}
+      <tr class="app-list-row picker-list-row" onclick="App.selectProductFromPicker('${p.id}')">
+        <td class="col-code" style="font-weight:700; color:#0284c7;">
+          <div class="mobile-card-header">
+            <span class="mobile-sku-badge">#${p.code || '-'}</span>
+            <span class="mobile-prod-title">${p.name}</span>
+          </div>
+          <span class="desktop-cell-text">${p.code || '-'}</span>
+        </td>
+        <td class="col-desc desktop-only-cell" style="font-weight:600;">${p.name}</td>
+        <td class="col-unit">
+          <div class="mobile-field-row">
+            <span class="mobile-field-label">${isEn ? 'Unit' : 'الوحدة'}:</span>
+            <span>${p.unit || (isEn ? 'Carton' : 'كرتون')}</span>
+          </div>
+          <span class="desktop-cell-text">${p.unit || (isEn ? 'Carton' : 'كرتون')}</span>
+        </td>
+        <td class="col-price">
+          <div class="mobile-field-row">
+            <span class="mobile-field-label">${isEn ? 'Price' : 'السعر'}:</span>
+            <span style="font-weight:800; color:#0284c7;">${(p.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR</span>
+          </div>
+          <span class="desktop-cell-text" style="font-weight:700; text-align:center;">${(p.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR</span>
+        </td>
+        <td class="col-actions">
+          <button type="button" class="btn btn-sm btn-primary action-btn-main" style="width: 100%; padding: 8px 14px;" onclick="event.stopPropagation(); App.selectProductFromPicker('${p.id}')">
+            ➕ ${isEn ? 'Select & Add' : 'اختيار وإضافة'}
           </button>
         </td>
       </tr>
@@ -1462,16 +1536,50 @@ const App = {
     }
 
     tbody.innerHTML = customers.map(c => `
-      <tr>
-        <td style="font-weight: bold;">${c.name}</td>
-        <td>${c.taxNumber || 'لايوجد'}</td>
-        <td>${c.crNumber || '-'}</td>
-        <td>${c.phone || '-'}</td>
-        <td>${c.address || '-'}</td>
-        <td>
-          <div style="display: flex; gap: 6px; justify-content: flex-end;">
-            <button class="btn btn-sm btn-outline" onclick="App.openEditCustomerModal('${c.id}')">${isEn ? 'Edit' : 'تعديل'}</button>
-            <button class="btn btn-sm btn-danger" onclick="App.deleteCustomer('${c.id}')">${isEn ? 'Delete' : 'حذف'}</button>
+      <tr class="app-list-row customer-list-row" onclick="App.openEditCustomerModal('${c.id}')">
+        <td class="col-custname" style="font-weight: bold;">
+          <div class="mobile-card-header">
+            <span class="mobile-cust-title">🏢 ${c.name}</span>
+            <span class="mobile-dest-badge">${c.destination || (isEn ? 'Local' : 'محلي')}</span>
+          </div>
+          <span class="desktop-cell-text">${c.name}</span>
+        </td>
+        <td class="col-tax">
+          <div class="mobile-field-row">
+            <span class="mobile-field-label">${isEn ? 'VAT No' : 'الرقم الضريبي'}:</span>
+            <span>${c.taxNumber || 'لايوجد'}</span>
+          </div>
+          <span class="desktop-cell-text">${c.taxNumber || 'لايوجد'}</span>
+        </td>
+        <td class="col-cr">
+          <div class="mobile-field-row">
+            <span class="mobile-field-label">${isEn ? 'CR No' : 'السجل التجاري'}:</span>
+            <span>${c.crNumber || '-'}</span>
+          </div>
+          <span class="desktop-cell-text">${c.crNumber || '-'}</span>
+        </td>
+        <td class="col-phone">
+          <div class="mobile-field-row">
+            <span class="mobile-field-label">${isEn ? 'Phone' : 'الجوال'}:</span>
+            <span>${c.phone || '-'}</span>
+          </div>
+          <span class="desktop-cell-text">${c.phone || '-'}</span>
+        </td>
+        <td class="col-address">
+          <div class="mobile-field-row">
+            <span class="mobile-field-label">${isEn ? 'Address' : 'العنوان'}:</span>
+            <span>${c.address || '-'}</span>
+          </div>
+          <span class="desktop-cell-text">${c.address || '-'}</span>
+        </td>
+        <td class="col-actions">
+          <div class="card-actions-wrapper" onclick="event.stopPropagation()">
+            <button type="button" class="btn btn-sm btn-primary action-btn-main" onclick="event.stopPropagation(); App.openEditCustomerModal('${c.id}')">
+              ✏️ ${isEn ? 'Edit Customer' : 'تعديل العميل'}
+            </button>
+            <button type="button" class="btn btn-sm btn-danger action-btn-sec" onclick="event.stopPropagation(); App.deleteCustomer('${c.id}')">
+              🗑️ ${isEn ? 'Delete' : 'حذف'}
+            </button>
           </div>
         </td>
       </tr>
