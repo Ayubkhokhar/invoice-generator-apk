@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon" href="assets/icon-192.png">
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=2.2">
 </head>
 <body>
 
@@ -592,6 +592,10 @@
             <input type="file" id="backup-file-input" accept=".json" style="display: none;" onchange="App.importBackup(event)">
           </label>
 
+          <button class="btn btn-outline" style="border-color: #0284c7; color: #0284c7; font-weight: 700;" onclick="App.hardRefresh()">
+            🔄 Force Update & Clear Cache (تحديث ومسح الذاكرة)
+          </button>
+
           <button class="btn btn-danger" data-i18n="btnResetAll" onclick="App.resetDemoData()">
             ⚠️ Reset to Initial Demo Data
           </button>
@@ -776,13 +780,13 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/tafqeet.js"></script>
-  <script src="js/hijri.js"></script>
-  <script src="js/zatca.js"></script>
-  <script src="js/qrcode.js"></script>
-  <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/i18n.js"></script>
-  <script src="js/db.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/tafqeet.js?v=2.2"></script>
+  <script src="js/hijri.js?v=2.2"></script>
+  <script src="js/zatca.js?v=2.2"></script>
+  <script src="js/qrcode.js?v=2.2"></script>
+  <script src="js/html2pdf.bundle.min.js?v=2.2"></script>
+  <script src="js/i18n.js?v=2.2"></script>
+  <script src="js/db.js?v=2.2"></script>
+  <script src="js/app.js?v=2.2"></script>
 </body>
 </html>

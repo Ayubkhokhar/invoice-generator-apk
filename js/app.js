@@ -1888,5 +1888,25 @@ const App = {
       alert(isEn ? 'Data reset successfully!' : 'تمت استعادة البيانات الافتراضية بنجاح!');
       window.location.reload();
     }
+  },
+
+  hardRefresh: async function() {
+    try {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let reg of registrations) {
+          await reg.unregister();
+        }
+      }
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        for (let k of keys) {
+          await caches.delete(k);
+        }
+      }
+    } catch (e) {
+      console.warn('Cache purge error:', e);
+    }
+    window.location.href = window.location.pathname + '?v=' + Date.now();
   }
 };
