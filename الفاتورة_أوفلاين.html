@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon" href="assets/icon-192.png">
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/styles.css?v=2.4">
+  <link rel="stylesheet" href="css/styles.css?v=2.5">
 </head>
 <body>
 
@@ -5486,11 +5486,12 @@ const App = {
 
     if (typeof html2pdf !== 'undefined') {
       const opt = {
-        margin: [4, 4, 4, 4],
+        margin: [0, 0, 0, 0],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       // Check if running inside Android APK with native AndroidPrint bridge
@@ -5540,6 +5541,7 @@ const App = {
       warehouse: 'المستودع :',
       docNumber: 'الرقم :',
       docType: 'النوع :',
+      paymentMethod: 'طريقة الدفع:',
       refNo: 'المرجع :',
       orderNo: 'الطلبية :',
       rate: 'الصرف :',
@@ -5550,7 +5552,7 @@ const App = {
       time: 'الوقت:',
       customer: 'العميل',
       address: 'العنــوان :',
-      balance: 'الرصيد',
+      balance: 'طريقة الدفع',
       taxNumber: 'برقم ضريبي',
       destination: 'الوجهة',
       crNumber: 'ر.السجل',
@@ -5600,11 +5602,11 @@ const App = {
         qrPayload = (settings.websiteUrl || 'https://www.mayarjeddah.com').trim();
         const displayHost = qrPayload.replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
         if (pLang === 'ar') {
-          qrCaptionText = `<div style="font-weight:700;color:#0f172a;">زيارة موقع المنشأة</div><div style="font-size:10px;font-weight:800;color:#0284c7;margin-top:2px;">${displayHost}</div>`;
+          qrCaptionText = `<div style="font-weight:800;color:#002060;">زيارة موقع المنشأة</div><div style="font-size:10px;font-weight:800;color:#0284c7;margin-top:2px;">${displayHost}</div>`;
         } else if (pLang === 'en') {
-          qrCaptionText = `<div style="font-weight:700;color:#0f172a;">Scan to Visit Website</div><div style="font-size:10px;font-weight:800;color:#0284c7;margin-top:2px;">${displayHost}</div>`;
+          qrCaptionText = `<div style="font-weight:800;color:#002060;">Scan to Visit Website</div><div style="font-size:10px;font-weight:800;color:#0284c7;margin-top:2px;">${displayHost}</div>`;
         } else {
-          qrCaptionText = `<div style="font-weight:700;color:#0f172a;">زيارة الموقع / Scan Website</div><div style="font-size:10px;font-weight:800;color:#0284c7;margin-top:2px;">${displayHost}</div>`;
+          qrCaptionText = `<div style="font-weight:800;color:#002060;">زيارة الموقع / Scan Website</div><div style="font-size:10px;font-weight:800;color:#0284c7;margin-top:2px;">${displayHost}</div>`;
         }
       } else {
         const timestamp = `${inv.date}T${inv.time || '12:00:00'}Z`;
@@ -5615,7 +5617,7 @@ const App = {
           inv.grandTotal,
           inv.vatTotal
         );
-        qrCaptionText = `<div style="font-weight:700;color:#0f172a;">${lbl.zatcaStamp || 'فاتورة إلكترونية معتمدة'}</div><div style="font-size:8.5px;color:#64748b;margin-top:2px;">ZATCA E-Invoice</div>`;
+        qrCaptionText = `<div style="font-weight:800;color:#002060;">${lbl.zatcaStamp || 'فاتورة إلكترونية معتمدة'}</div><div style="font-size:8.5px;color:#0284c7;font-weight:700;margin-top:2px;">ZATCA E-Invoice</div>`;
       }
 
       if (qrPayload && typeof qrcode !== 'undefined') {
@@ -5629,26 +5631,26 @@ const App = {
     // Logo image / SVG in middle of invoice header
     let logoHtml = '';
     if (settings.logoUrl && settings.logoUrl !== 'none') {
-      logoHtml = `<img src="${settings.logoUrl}" alt="Logo" style="max-height: 65px; max-width: 150px; object-fit: contain;">`;
+      logoHtml = `<img src="${settings.logoUrl}" alt="Logo" style="max-height: 52px; max-width: 140px; object-fit: contain;">`;
     } else if (settings.logoUrl === 'none') {
       logoHtml = '';
     } else {
-      logoHtml = `<img src="assets/logo.svg" alt="Logo" style="max-height: 65px; max-width: 150px; object-fit: contain;">`;
+      logoHtml = `<img src="assets/logo.svg" alt="Logo" style="max-height: 52px; max-width: 140px; object-fit: contain;">`;
     }
 
     // Build Table Rows matching exact سلنو.pdf
-    const rowsHtml = (inv.items || []).map(item => `
-      <tr>
-        <td style="width: 25px; text-align: center;">${item.sr}</td>
-        <td style="width: 50px; text-align: center;">${item.code || ''}</td>
-        <td class="desc">${item.description || ''}</td>
+    const rowsHtml = (inv.items || []).map((item, idx) => `
+      <tr class="${idx % 2 === 1 ? 'inv-row-alt' : ''}">
+        <td style="width: 25px; text-align: center; font-weight: 700;">${item.sr}</td>
+        <td style="width: 50px; text-align: center; color: #475569; font-weight: 700;">${item.code || ''}</td>
+        <td class="desc" style="color: #0f172a; font-weight: 700;">${item.description || ''}</td>
         <td style="width: 50px; text-align: center;">${item.unit || ''}</td>
-        <td style="width: 50px; text-align: center;">${fmt(item.quantity)}</td>
+        <td style="width: 50px; text-align: center; font-weight: 700;">${fmt(item.quantity)}</td>
         <td style="width: 55px; text-align: center;">${fmt(item.price)}</td>
-        <td class="blue-net" style="width: 65px; text-align: center;">${fmt(item.net)}</td>
-        <td style="width: 32px; text-align: center; font-size: 10px;">%${(item.vatRate !== undefined && item.vatRate !== null) ? item.vatRate : 15}</td>
-        <td style="width: 55px; text-align: center;">${fmt(item.vatAmount)}</td>
-        <td style="width: 65px; text-align: center; font-weight: 700;">${fmt(item.totalWithVat)}</td>
+        <td class="blue-net" style="width: 65px; text-align: center; font-weight: 800;">${fmt(item.net)}</td>
+        <td style="width: 32px; text-align: center; font-size: 10px; color: #0284c7; font-weight: 700;">%${(item.vatRate !== undefined && item.vatRate !== null) ? item.vatRate : 15}</td>
+        <td style="width: 55px; text-align: center; color: #b91c1c; font-weight: 700;">${fmt(item.vatAmount)}</td>
+        <td class="inv-total-vat-col" style="width: 65px; text-align: center; font-weight: 900;">${fmt(item.totalWithVat)}</td>
       </tr>
     `).join('');
 
@@ -5668,7 +5670,7 @@ const App = {
       } else if (pLang === 'en') {
         tafqeetText = enTaf;
       } else {
-        tafqeetText = `<div>${arTaf}</div><div style="font-size: 10px; font-weight: normal; color: #333; margin-top: 2px;">${enTaf}</div>`;
+        tafqeetText = `<div>${arTaf}</div><div style="font-size: 10px; font-weight: 600; color: #0369a1; margin-top: 1px;">${enTaf}</div>`;
       }
     } catch (e) {
       console.error('Tafqeet error:', e);
@@ -5683,8 +5685,13 @@ const App = {
       card: (lbl.paymentCard || (pLang === 'en' ? 'Card / Mada' : (pLang === 'bilingual' ? 'شبكة (مدى) / Card' : 'شبكة (مدى)')))
     };
     const payMethodText = payMap[inv.paymentMethod || 'cash'] || payMap['cash'];
+    const payBadgeColor = (inv.paymentMethod === 'cash') ? '#059669' : '#0284c7';
+    const payBadgeBg = (inv.paymentMethod === 'cash') ? '#dcfce7' : '#e0f2fe';
 
     printEl.innerHTML = `
+      <!-- Top Decorative Corporate Color Bar -->
+      <div class="inv-top-color-bar"></div>
+
       <!-- 1. Header Grid -->
       <div class="inv-header-grid">
         <div class="inv-company-en">
@@ -5723,9 +5730,9 @@ const App = {
         <div class="inv-meta-center">
           <div class="inv-doc-title">${docTitle}</div>
           <div class="inv-meta-center-details">
-            <div class="inv-meta-row"><span class="label">${lbl.docNumber}</span> <span style="font-weight: 800;">${inv.number}</span></div>
+            <div class="inv-meta-row"><span class="label">${lbl.docNumber}</span> <span style="font-weight: 800; color: #002060; background: #e0f2fe; padding: 1px 6px; border-radius: 4px;">${inv.number}</span></div>
             <div class="inv-meta-row"><span class="label">${lbl.docType}</span> <span>${inv.type === 'quotation' ? (pLang === 'en' ? 'Quotation' : (pLang === 'bilingual' ? 'عرض بيع / Quotation' : 'عرض بيع')) : (pLang === 'en' ? 'Tax Invoice' : (pLang === 'bilingual' ? 'فاتورة ضريبية / Tax Invoice' : 'فاتورة ضريبية'))}</span></div>
-            <div class="inv-meta-row"><span class="label">${lbl.paymentMethod || 'طريقة الدفع:'}</span> <span style="font-weight: 800; color: #002060;">${payMethodText}</span></div>
+            <div class="inv-meta-row"><span class="label">${lbl.paymentMethod || 'طريقة الدفع:'}</span> <span style="font-weight: 800; color: ${payBadgeColor}; background: ${payBadgeBg}; padding: 1px 6px; border-radius: 4px;">${payMethodText}</span></div>
             <div class="inv-meta-row"><span class="label">${lbl.refNo}</span> <span>${inv.refNo || ''}</span></div>
             <div class="inv-meta-row"><span class="label">${lbl.orderNo}</span> <span>${inv.orderNo || ''}</span></div>
             <div class="inv-meta-row"><span class="label">${lbl.rate}</span> <span>${inv.exchangeRate || 1}</span></div>
@@ -5746,7 +5753,7 @@ const App = {
         <div class="inv-cust-col">
           <div class="inv-cust-row"><span class="lbl">${lbl.customer}</span> <span>${inv.customer ? inv.customer.name : ''}</span></div>
           <div class="inv-cust-row"><span class="lbl">${lbl.address}</span> <span>${inv.customer ? (inv.customer.address || '') : ''}</span></div>
-          <div class="inv-cust-row"><span class="lbl">${lbl.balance || lbl.paymentMethod || 'طريقة الدفع:'}</span> <span style="font-weight: 800; color: #002060;">${payMethodText}</span></div>
+          <div class="inv-cust-row"><span class="lbl">${lbl.balance || lbl.paymentMethod || 'طريقة الدفع:'}</span> <span style="font-weight: 800; color: ${payBadgeColor}; background: ${payBadgeBg}; padding: 1px 6px; border-radius: 4px;">${payMethodText}</span></div>
         </div>
 
         <div class="inv-cust-col">
