@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mayar-invoices-v5';
+const CACHE_NAME = 'mayar-invoices-v6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

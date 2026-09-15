@@ -813,28 +813,34 @@ const App = {
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      // Check if running inside Android APK with native AndroidPrint bridge
-      if (window.AndroidPrint && typeof window.AndroidPrint.savePdf === 'function') {
-        const dlBtn = document.querySelector('button[onclick*="downloadPdf"]');
-        const origText = dlBtn ? dlBtn.innerHTML : '';
-        if (dlBtn) dlBtn.innerHTML = '⏳ Generating PDF...';
+      const dlBtn = document.querySelector('button[onclick*="downloadPdf"]');
+      const origText = dlBtn ? dlBtn.innerHTML : '';
+      if (dlBtn) dlBtn.innerHTML = '⏳ Generating PDF...';
 
-        html2pdf().set(opt).from(printEl).outputPdf('datauristring').then(function(pdfDataUri) {
-          if (dlBtn) dlBtn.innerHTML = origText;
+      html2pdf().set(opt).from(printEl).toPdf().get('pdf').then(function(pdf) {
+        // Strictly guarantee 1 single page by removing any accidental spillover pages
+        const totalPages = pdf.internal.getNumberOfPages();
+        for (let p = totalPages; p > 1; p--) {
+          pdf.deletePage(p);
+        }
+
+        if (dlBtn) dlBtn.innerHTML = origText;
+
+        // Check if running inside Android APK with native AndroidPrint bridge
+        if (window.AndroidPrint && typeof window.AndroidPrint.savePdf === 'function') {
+          const pdfDataUri = pdf.output('datauristring');
           window.AndroidPrint.savePdf(pdfDataUri, filename);
-        }).catch(function(err) {
-          if (dlBtn) dlBtn.innerHTML = origText;
-          console.error('Error generating PDF for Android APK:', err);
-          alert('Error generating PDF: ' + (err.message || err));
-        });
-        return;
-      }
-
-      html2pdf().set(opt).from(printEl).save();
+        } else {
+          pdf.save(filename);
+        }
+      }).catch(function(err) {
+        if (dlBtn) dlBtn.innerHTML = origText;
+        console.error('Error generating PDF:', err);
+        alert('Error generating PDF: ' + (err.message || err));
+      });
     } else {
       this.executePrint();
     }
