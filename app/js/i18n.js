@@ -141,6 +141,26 @@ const I18N = {
       en: 'Gregorian Date',
       ar: 'التاريخ الميلادي'
     },
+    lblPaymentMethod: {
+      en: 'Payment Method',
+      ar: 'طريقة الدفع'
+    },
+    optPaymentCash: {
+      en: 'Cash (نقدي)',
+      ar: 'نقدي (Cash)'
+    },
+    optPaymentCredit: {
+      en: 'Credit / On Account (آجل)',
+      ar: 'آجل (Credit)'
+    },
+    optPaymentBank: {
+      en: 'Bank Transfer (تحويل بنكي)',
+      ar: 'تحويل بنكي (Bank Transfer)'
+    },
+    optPaymentCard: {
+      en: 'Card / Mada (شبكة / مدى)',
+      ar: 'شبكة / مدى (Card)'
+    },
     lblDocHijri: {
       en: 'Hijri Date (الموافق)',
       ar: 'التاريخ الهجري (الموافق)'
@@ -641,6 +661,11 @@ const I18N = {
       warehouse: 'Warehouse:',
       docNumber: 'Doc No:',
       docType: 'Type:',
+      paymentMethod: 'Payment Method:',
+      paymentCash: 'Cash',
+      paymentCredit: 'Credit / On Account',
+      paymentBank: 'Bank Transfer',
+      paymentCard: 'Card / Mada',
       refNo: 'Reference:',
       orderNo: 'Order No:',
       rate: 'Rate:',
@@ -651,7 +676,7 @@ const I18N = {
       time: 'Time:',
       customer: 'Customer:',
       address: 'Address:',
-      balance: 'Balance:',
+      balance: 'Payment Method:',
       taxNumber: 'Tax Number:',
       destination: 'Destination:',
       crNumber: 'CR Number:',
@@ -697,6 +722,11 @@ const I18N = {
       warehouse: 'المستودع / Store:',
       docNumber: 'الرقم / No:',
       docType: 'النوع / Type:',
+      paymentMethod: 'طريقة الدفع / Payment:',
+      paymentCash: 'نقدي / Cash',
+      paymentCredit: 'آجل / Credit',
+      paymentBank: 'تحويل بنكي / Bank Transfer',
+      paymentCard: 'شبكة (مدى) / Card',
       refNo: 'المرجع / Ref:',
       orderNo: 'الطلبية / Order:',
       rate: 'الصرف / Rate:',
@@ -707,7 +737,7 @@ const I18N = {
       time: 'الوقت / Time:',
       customer: 'العميل / Customer',
       address: 'العنوان / Address:',
-      balance: 'الرصيد / Balance',
+      balance: 'طريقة الدفع / Payment',
       taxNumber: 'الرقم الضريبي / Tax No',
       destination: 'الوجهة / Dest',
       crNumber: 'السجل / CR No',
@@ -753,6 +783,11 @@ const I18N = {
       warehouse: 'المستودع :',
       docNumber: 'الرقم :',
       docType: 'النوع :',
+      paymentMethod: 'طريقة الدفع:',
+      paymentCash: 'نقدي',
+      paymentCredit: 'آجل',
+      paymentBank: 'تحويل بنكي',
+      paymentCard: 'شبكة (مدى)',
       refNo: 'المرجع :',
       orderNo: 'الطلبية :',
       rate: 'الصرف :',
@@ -763,7 +798,7 @@ const I18N = {
       time: 'الوقت:',
       customer: 'العميل',
       address: 'العنــوان :',
-      balance: 'الرصيد',
+      balance: 'طريقة الدفع',
       taxNumber: 'برقم ضريبي',
       destination: 'الوجهة',
       crNumber: 'ر.السجل',

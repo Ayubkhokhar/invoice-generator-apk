@@ -132,6 +132,7 @@ const App = {
         date: dateStr,
         hijriDate: HijriConverter.toHijri(dateStr, -1),
         time: timeStr,
+        paymentMethod: 'cash',
         orderNo: '',
         refNo: '',
         currency: settings.currency || 'SR ريال',
@@ -193,6 +194,7 @@ const App = {
     if (document.getElementById('inv-type')) document.getElementById('inv-type').value = inv.type || 'quotation';
     if (document.getElementById('inv-number')) document.getElementById('inv-number').value = inv.number || '';
     if (document.getElementById('inv-date')) document.getElementById('inv-date').value = inv.date || '';
+    if (document.getElementById('inv-payment-method')) document.getElementById('inv-payment-method').value = inv.paymentMethod || 'cash';
     if (document.getElementById('inv-hijri-date')) document.getElementById('inv-hijri-date').value = inv.hijriDate || '';
     if (document.getElementById('inv-time')) document.getElementById('inv-time').value = inv.time || '';
     const orderEl = document.getElementById('inv-order') || document.getElementById('inv-order-no');
@@ -237,6 +239,13 @@ const App = {
     if (notesEl) notesEl.value = inv.notes || '';
 
     this.renderInvoiceItemsRows();
+  },
+
+  onPaymentMethodChange: function() {
+    const pm = document.getElementById('inv-payment-method')?.value || 'cash';
+    if (this.currentInvoice) {
+      this.currentInvoice.paymentMethod = pm;
+    }
   },
 
   onDocTypeChange: function() {
@@ -688,6 +697,7 @@ const App = {
     inv.time = document.getElementById('inv-time')?.value || new Date().toTimeString().split(' ')[0];
     inv.orderNo = document.getElementById('inv-order')?.value || document.getElementById('inv-order-no')?.value || '';
     inv.refNo = document.getElementById('inv-ref')?.value || document.getElementById('inv-ref-no')?.value || '';
+    inv.paymentMethod = document.getElementById('inv-payment-method')?.value || 'cash';
     inv.costCenter = document.getElementById('inv-cost-center')?.value || '';
     inv.salesRep = document.getElementById('inv-sales-rep')?.value || '';
     inv.warehouse = document.getElementById('inv-warehouse')?.value || '';
@@ -985,6 +995,15 @@ const App = {
       tafqeetText = '';
     }
 
+    // Resolve payment method label
+    const payMap = {
+      cash: (lbl.paymentCash || (pLang === 'en' ? 'Cash' : (pLang === 'bilingual' ? 'نقدي / Cash' : 'نقدي'))),
+      credit: (lbl.paymentCredit || (pLang === 'en' ? 'Credit / On Account' : (pLang === 'bilingual' ? 'آجل / Credit' : 'آجل'))),
+      bank: (lbl.paymentBank || (pLang === 'en' ? 'Bank Transfer' : (pLang === 'bilingual' ? 'تحويل بنكي / Bank Transfer' : 'تحويل بنكي'))),
+      card: (lbl.paymentCard || (pLang === 'en' ? 'Card / Mada' : (pLang === 'bilingual' ? 'شبكة (مدى) / Card' : 'شبكة (مدى)')))
+    };
+    const payMethodText = payMap[inv.paymentMethod || 'cash'] || payMap['cash'];
+
     printEl.innerHTML = `
       <!-- 1. Header Grid -->
       <div class="inv-header-grid">
@@ -1026,6 +1045,7 @@ const App = {
           <div class="inv-meta-center-details">
             <div class="inv-meta-row"><span class="label">${lbl.docNumber}</span> <span style="font-weight: 800;">${inv.number}</span></div>
             <div class="inv-meta-row"><span class="label">${lbl.docType}</span> <span>${inv.type === 'quotation' ? (pLang === 'en' ? 'Quotation' : (pLang === 'bilingual' ? 'عرض بيع / Quotation' : 'عرض بيع')) : (pLang === 'en' ? 'Tax Invoice' : (pLang === 'bilingual' ? 'فاتورة ضريبية / Tax Invoice' : 'فاتورة ضريبية'))}</span></div>
+            <div class="inv-meta-row"><span class="label">${lbl.paymentMethod || 'طريقة الدفع:'}</span> <span style="font-weight: 800; color: #002060;">${payMethodText}</span></div>
             <div class="inv-meta-row"><span class="label">${lbl.refNo}</span> <span>${inv.refNo || ''}</span></div>
             <div class="inv-meta-row"><span class="label">${lbl.orderNo}</span> <span>${inv.orderNo || ''}</span></div>
             <div class="inv-meta-row"><span class="label">${lbl.rate}</span> <span>${inv.exchangeRate || 1}</span></div>
@@ -1046,7 +1066,7 @@ const App = {
         <div class="inv-cust-col">
           <div class="inv-cust-row"><span class="lbl">${lbl.customer}</span> <span>${inv.customer ? inv.customer.name : ''}</span></div>
           <div class="inv-cust-row"><span class="lbl">${lbl.address}</span> <span>${inv.customer ? (inv.customer.address || '') : ''}</span></div>
-          <div class="inv-cust-row"><span class="lbl">${lbl.balance}</span> <span>${inv.customer && inv.customer.balance ? inv.customer.balance : '0.00'}</span></div>
+          <div class="inv-cust-row"><span class="lbl">${lbl.balance || lbl.paymentMethod || 'طريقة الدفع:'}</span> <span style="font-weight: 800; color: #002060;">${payMethodText}</span></div>
         </div>
 
         <div class="inv-cust-col">
@@ -1153,21 +1173,20 @@ const App = {
         ${tafqeetText}
       </div>
 
-      <!-- 8. Document Footer: Signatures & QR Code (Guaranteed 100% Inside Page) -->
-      <div class="inv-footer-container">
-        <div class="inv-signatures-row">
-          <div>${lbl.receiverSign}</div>
-          <div>${lbl.sellerSign}</div>
-        </div>
-
-        ${settings.showZatcaQr && qrSvgHtml ? `
-          <div class="inv-qr-footer-row">
-            <div class="inv-qr-badge-card">
-              <div class="inv-qr-svg-wrap">${qrSvgHtml}</div>
-              <div class="inv-qr-caption-text">${qrCaptionText}</div>
-            </div>
+      <!-- 8. Middle QR Code Strip (Directly Under Totals & Tafqeet) -->
+      ${settings.showZatcaQr && qrSvgHtml ? `
+        <div class="inv-qr-middle-strip">
+          <div class="inv-qr-badge-card">
+            <div class="inv-qr-svg-wrap">${qrSvgHtml}</div>
+            <div class="inv-qr-caption-text">${qrCaptionText}</div>
           </div>
-        ` : ''}
+        </div>
+      ` : ''}
+
+      <!-- 9. Signatures Row -->
+      <div class="inv-signatures-row">
+        <div>${lbl.receiverSign}</div>
+        <div>${lbl.sellerSign}</div>
       </div>
     `;
   },

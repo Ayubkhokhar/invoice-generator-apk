@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon" href="assets/icon-192.png">
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/styles.css?v=2.2">
+  <link rel="stylesheet" href="css/styles.css?v=2.3">
 </head>
 <body>
 
@@ -123,7 +123,7 @@
           </div>
         </div>
 
-        <!-- Quick Top Bar: Document Type & Number -->
+        <!-- Quick Top Bar: Document Type, Number, Date, Payment Method -->
         <div class="form-grid quick-doc-grid" style="margin-bottom: 14px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
           <div class="form-group doc-type-group">
             <label data-i18n="lblDocType" style="font-weight:700;">Document Type</label>
@@ -141,6 +141,16 @@
           <div class="form-group doc-date-group">
             <label data-i18n="lblDocDate">Date</label>
             <input type="date" class="form-control" id="inv-date">
+          </div>
+
+          <div class="form-group doc-payment-group">
+            <label data-i18n="lblPaymentMethod" style="font-weight:700;">Payment Method</label>
+            <select class="form-control" id="inv-payment-method" style="font-weight:700;" onchange="App.onPaymentMethodChange()">
+              <option value="cash" data-i18n="optPaymentCash">Cash (نقدي)</option>
+              <option value="credit" data-i18n="optPaymentCredit">Credit / On Account (آجل)</option>
+              <option value="bank" data-i18n="optPaymentBank">Bank Transfer (تحويل بنكي)</option>
+              <option value="card" data-i18n="optPaymentCard">Card / Mada (شبكة / مدى)</option>
+            </select>
           </div>
         </div>
 
@@ -3486,6 +3496,26 @@ const I18N = {
       en: 'Gregorian Date',
       ar: 'التاريخ الميلادي'
     },
+    lblPaymentMethod: {
+      en: 'Payment Method',
+      ar: 'طريقة الدفع'
+    },
+    optPaymentCash: {
+      en: 'Cash (نقدي)',
+      ar: 'نقدي (Cash)'
+    },
+    optPaymentCredit: {
+      en: 'Credit / On Account (آجل)',
+      ar: 'آجل (Credit)'
+    },
+    optPaymentBank: {
+      en: 'Bank Transfer (تحويل بنكي)',
+      ar: 'تحويل بنكي (Bank Transfer)'
+    },
+    optPaymentCard: {
+      en: 'Card / Mada (شبكة / مدى)',
+      ar: 'شبكة / مدى (Card)'
+    },
     lblDocHijri: {
       en: 'Hijri Date (الموافق)',
       ar: 'التاريخ الهجري (الموافق)'
@@ -3986,6 +4016,11 @@ const I18N = {
       warehouse: 'Warehouse:',
       docNumber: 'Doc No:',
       docType: 'Type:',
+      paymentMethod: 'Payment Method:',
+      paymentCash: 'Cash',
+      paymentCredit: 'Credit / On Account',
+      paymentBank: 'Bank Transfer',
+      paymentCard: 'Card / Mada',
       refNo: 'Reference:',
       orderNo: 'Order No:',
       rate: 'Rate:',
@@ -3996,7 +4031,7 @@ const I18N = {
       time: 'Time:',
       customer: 'Customer:',
       address: 'Address:',
-      balance: 'Balance:',
+      balance: 'Payment Method:',
       taxNumber: 'Tax Number:',
       destination: 'Destination:',
       crNumber: 'CR Number:',
@@ -4042,6 +4077,11 @@ const I18N = {
       warehouse: 'المستودع / Store:',
       docNumber: 'الرقم / No:',
       docType: 'النوع / Type:',
+      paymentMethod: 'طريقة الدفع / Payment:',
+      paymentCash: 'نقدي / Cash',
+      paymentCredit: 'آجل / Credit',
+      paymentBank: 'تحويل بنكي / Bank Transfer',
+      paymentCard: 'شبكة (مدى) / Card',
       refNo: 'المرجع / Ref:',
       orderNo: 'الطلبية / Order:',
       rate: 'الصرف / Rate:',
@@ -4052,7 +4092,7 @@ const I18N = {
       time: 'الوقت / Time:',
       customer: 'العميل / Customer',
       address: 'العنوان / Address:',
-      balance: 'الرصيد / Balance',
+      balance: 'طريقة الدفع / Payment',
       taxNumber: 'الرقم الضريبي / Tax No',
       destination: 'الوجهة / Dest',
       crNumber: 'السجل / CR No',
@@ -4098,6 +4138,11 @@ const I18N = {
       warehouse: 'المستودع :',
       docNumber: 'الرقم :',
       docType: 'النوع :',
+      paymentMethod: 'طريقة الدفع:',
+      paymentCash: 'نقدي',
+      paymentCredit: 'آجل',
+      paymentBank: 'تحويل بنكي',
+      paymentCard: 'شبكة (مدى)',
       refNo: 'المرجع :',
       orderNo: 'الطلبية :',
       rate: 'الصرف :',
@@ -4108,7 +4153,7 @@ const I18N = {
       time: 'الوقت:',
       customer: 'العميل',
       address: 'العنــوان :',
-      balance: 'الرصيد',
+      balance: 'طريقة الدفع',
       taxNumber: 'برقم ضريبي',
       destination: 'الوجهة',
       crNumber: 'ر.السجل',
@@ -4764,6 +4809,7 @@ const App = {
         date: dateStr,
         hijriDate: HijriConverter.toHijri(dateStr, -1),
         time: timeStr,
+        paymentMethod: 'cash',
         orderNo: '',
         refNo: '',
         currency: settings.currency || 'SR ريال',
@@ -4825,6 +4871,7 @@ const App = {
     if (document.getElementById('inv-type')) document.getElementById('inv-type').value = inv.type || 'quotation';
     if (document.getElementById('inv-number')) document.getElementById('inv-number').value = inv.number || '';
     if (document.getElementById('inv-date')) document.getElementById('inv-date').value = inv.date || '';
+    if (document.getElementById('inv-payment-method')) document.getElementById('inv-payment-method').value = inv.paymentMethod || 'cash';
     if (document.getElementById('inv-hijri-date')) document.getElementById('inv-hijri-date').value = inv.hijriDate || '';
     if (document.getElementById('inv-time')) document.getElementById('inv-time').value = inv.time || '';
     const orderEl = document.getElementById('inv-order') || document.getElementById('inv-order-no');
@@ -4869,6 +4916,13 @@ const App = {
     if (notesEl) notesEl.value = inv.notes || '';
 
     this.renderInvoiceItemsRows();
+  },
+
+  onPaymentMethodChange: function() {
+    const pm = document.getElementById('inv-payment-method')?.value || 'cash';
+    if (this.currentInvoice) {
+      this.currentInvoice.paymentMethod = pm;
+    }
   },
 
   onDocTypeChange: function() {
@@ -5320,6 +5374,7 @@ const App = {
     inv.time = document.getElementById('inv-time')?.value || new Date().toTimeString().split(' ')[0];
     inv.orderNo = document.getElementById('inv-order')?.value || document.getElementById('inv-order-no')?.value || '';
     inv.refNo = document.getElementById('inv-ref')?.value || document.getElementById('inv-ref-no')?.value || '';
+    inv.paymentMethod = document.getElementById('inv-payment-method')?.value || 'cash';
     inv.costCenter = document.getElementById('inv-cost-center')?.value || '';
     inv.salesRep = document.getElementById('inv-sales-rep')?.value || '';
     inv.warehouse = document.getElementById('inv-warehouse')?.value || '';
@@ -5617,6 +5672,15 @@ const App = {
       tafqeetText = '';
     }
 
+    // Resolve payment method label
+    const payMap = {
+      cash: (lbl.paymentCash || (pLang === 'en' ? 'Cash' : (pLang === 'bilingual' ? 'نقدي / Cash' : 'نقدي'))),
+      credit: (lbl.paymentCredit || (pLang === 'en' ? 'Credit / On Account' : (pLang === 'bilingual' ? 'آجل / Credit' : 'آجل'))),
+      bank: (lbl.paymentBank || (pLang === 'en' ? 'Bank Transfer' : (pLang === 'bilingual' ? 'تحويل بنكي / Bank Transfer' : 'تحويل بنكي'))),
+      card: (lbl.paymentCard || (pLang === 'en' ? 'Card / Mada' : (pLang === 'bilingual' ? 'شبكة (مدى) / Card' : 'شبكة (مدى)')))
+    };
+    const payMethodText = payMap[inv.paymentMethod || 'cash'] || payMap['cash'];
+
     printEl.innerHTML = `
       <!-- 1. Header Grid -->
       <div class="inv-header-grid">
@@ -5658,6 +5722,7 @@ const App = {
           <div class="inv-meta-center-details">
             <div class="inv-meta-row"><span class="label">${lbl.docNumber}</span> <span style="font-weight: 800;">${inv.number}</span></div>
             <div class="inv-meta-row"><span class="label">${lbl.docType}</span> <span>${inv.type === 'quotation' ? (pLang === 'en' ? 'Quotation' : (pLang === 'bilingual' ? 'عرض بيع / Quotation' : 'عرض بيع')) : (pLang === 'en' ? 'Tax Invoice' : (pLang === 'bilingual' ? 'فاتورة ضريبية / Tax Invoice' : 'فاتورة ضريبية'))}</span></div>
+            <div class="inv-meta-row"><span class="label">${lbl.paymentMethod || 'طريقة الدفع:'}</span> <span style="font-weight: 800; color: #002060;">${payMethodText}</span></div>
             <div class="inv-meta-row"><span class="label">${lbl.refNo}</span> <span>${inv.refNo || ''}</span></div>
             <div class="inv-meta-row"><span class="label">${lbl.orderNo}</span> <span>${inv.orderNo || ''}</span></div>
             <div class="inv-meta-row"><span class="label">${lbl.rate}</span> <span>${inv.exchangeRate || 1}</span></div>
@@ -5678,7 +5743,7 @@ const App = {
         <div class="inv-cust-col">
           <div class="inv-cust-row"><span class="lbl">${lbl.customer}</span> <span>${inv.customer ? inv.customer.name : ''}</span></div>
           <div class="inv-cust-row"><span class="lbl">${lbl.address}</span> <span>${inv.customer ? (inv.customer.address || '') : ''}</span></div>
-          <div class="inv-cust-row"><span class="lbl">${lbl.balance}</span> <span>${inv.customer && inv.customer.balance ? inv.customer.balance : '0.00'}</span></div>
+          <div class="inv-cust-row"><span class="lbl">${lbl.balance || lbl.paymentMethod || 'طريقة الدفع:'}</span> <span style="font-weight: 800; color: #002060;">${payMethodText}</span></div>
         </div>
 
         <div class="inv-cust-col">
@@ -5785,21 +5850,20 @@ const App = {
         ${tafqeetText}
       </div>
 
-      <!-- 8. Document Footer: Signatures & QR Code (Guaranteed 100% Inside Page) -->
-      <div class="inv-footer-container">
-        <div class="inv-signatures-row">
-          <div>${lbl.receiverSign}</div>
-          <div>${lbl.sellerSign}</div>
-        </div>
-
-        ${settings.showZatcaQr && qrSvgHtml ? `
-          <div class="inv-qr-footer-row">
-            <div class="inv-qr-badge-card">
-              <div class="inv-qr-svg-wrap">${qrSvgHtml}</div>
-              <div class="inv-qr-caption-text">${qrCaptionText}</div>
-            </div>
+      <!-- 8. Middle QR Code Strip (Directly Under Totals & Tafqeet) -->
+      ${settings.showZatcaQr && qrSvgHtml ? `
+        <div class="inv-qr-middle-strip">
+          <div class="inv-qr-badge-card">
+            <div class="inv-qr-svg-wrap">${qrSvgHtml}</div>
+            <div class="inv-qr-caption-text">${qrCaptionText}</div>
           </div>
-        ` : ''}
+        </div>
+      ` : ''}
+
+      <!-- 9. Signatures Row -->
+      <div class="inv-signatures-row">
+        <div>${lbl.receiverSign}</div>
+        <div>${lbl.sellerSign}</div>
       </div>
     `;
   },
