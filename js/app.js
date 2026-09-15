@@ -1082,21 +1082,20 @@ const App = {
         <div class="inv-cust-col">
           <div class="inv-cust-row"><span class="lbl">${lbl.customer}</span> <span>${inv.customer ? inv.customer.name : ''}</span></div>
           <div class="inv-cust-row"><span class="lbl">${lbl.address}</span> <span>${inv.customer ? (inv.customer.address || '') : ''}</span></div>
-          <div class="inv-cust-row"><span class="lbl">${lbl.balance || lbl.paymentMethod || 'طريقة الدفع:'}</span> <span style="font-weight: 800; color: ${payBadgeColor}; background: ${payBadgeBg}; padding: 1px 6px; border-radius: 4px;">${payMethodText}</span></div>
         </div>
 
         <div class="inv-cust-col">
           <div class="inv-cust-row"><span class="lbl">${lbl.taxNumber}</span> <span>${inv.customer ? (inv.customer.taxNumber || (pLang === 'en' ? 'N/A' : 'لايوجد')) : (pLang === 'en' ? 'N/A' : 'لايوجد')}</span></div>
-          <div class="inv-cust-row" style="margin-top: 14px;"><span class="lbl">${lbl.destination}</span> <span>${inv.customer ? (inv.customer.destination || (pLang === 'en' ? 'Local' : 'محلي')) : (pLang === 'en' ? 'Local' : 'محلي')}</span></div>
+          <div class="inv-cust-row"><span class="lbl">${lbl.destination}</span> <span>${inv.customer ? (inv.customer.destination || (pLang === 'en' ? 'Local' : 'محلي')) : (pLang === 'en' ? 'Local' : 'محلي')}</span></div>
         </div>
 
         <div class="inv-cust-col">
           <div class="inv-cust-row"><span class="lbl">${lbl.crNumber}</span> <span>${inv.customer ? (inv.customer.crNumber || '') : ''}</span></div>
-          <div class="inv-cust-row" style="margin-top: 14px;"><span class="lbl">${lbl.repLabel}</span> <span>${inv.customer ? (inv.customer.representative || '') : ''}</span></div>
+          <div class="inv-cust-row"><span class="lbl">${lbl.repLabel}</span> <span>${inv.customer ? (inv.customer.representative || '') : ''}</span></div>
         </div>
 
         <div class="inv-cust-col">
-          <div class="inv-cust-row" style="margin-top: 18px;"><span class="lbl">${lbl.competitorsLabel}</span> <span>${inv.customer ? (inv.customer.competitors || '') : ''}</span></div>
+          <div class="inv-cust-row"><span class="lbl">${lbl.competitorsLabel}</span> <span>${inv.customer ? (inv.customer.competitors || '') : ''}</span></div>
         </div>
       </div>
 
