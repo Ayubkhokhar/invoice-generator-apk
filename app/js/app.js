@@ -245,6 +245,7 @@ const App = {
     const pm = document.getElementById('inv-payment-method')?.value || 'cash';
     if (this.currentInvoice) {
       this.currentInvoice.paymentMethod = pm;
+      this.recalculateInvoice();
     }
   },
 
@@ -631,8 +632,10 @@ const App = {
 
     const netTotal = grossTotal - discountAmount;
     const grandTotal = netTotal + totalVat;
-    const paidAmount = parseFloat(document.getElementById('inv-paid')?.value) || 0;
-    const remainingAmount = grandTotal - paidAmount;
+    const isCredit = (this.currentInvoice.paymentMethod === 'credit');
+    const rawPaid = parseFloat(document.getElementById('inv-paid')?.value);
+    const paidAmount = isCredit ? (isNaN(rawPaid) ? 0 : rawPaid) : grandTotal;
+    const remainingAmount = isCredit ? (grandTotal - paidAmount) : 0;
 
     this.currentInvoice.totalQuantity = totalQty;
     this.currentInvoice.subtotal = subtotal;
@@ -1144,15 +1147,17 @@ const App = {
 
         <!-- Middle: Quantities & Payments -->
         <div class="inv-mid-boxes">
-          <div class="inv-mid-card">
-            <span>${lbl.paid}</span>
-            <span>${fmt(inv.paidAmount)}</span>
-          </div>
-          <div class="inv-mid-card" style="margin-top: 4px;">
-            <span>${lbl.remaining}</span>
-            <span style="font-weight: 800;">${fmt(inv.remainingAmount)}</span>
-          </div>
-          <div class="inv-mid-card" style="margin-top: 4px;">
+          ${(inv.paymentMethod === 'credit') ? `
+            <div class="inv-mid-card">
+              <span>${lbl.paid}</span>
+              <span>${fmt(inv.paidAmount)}</span>
+            </div>
+            <div class="inv-mid-card" style="margin-top: 4px;">
+              <span>${lbl.remaining}</span>
+              <span style="font-weight: 800;">${fmt(inv.remainingAmount)}</span>
+            </div>
+          ` : ''}
+          <div class="inv-mid-card" style="${(inv.paymentMethod === 'credit') ? 'margin-top: 4px;' : ''}">
             <span>${lbl.totalQty}</span>
             <span>${fmt(inv.totalQuantity)}</span>
           </div>
@@ -1213,10 +1218,11 @@ const App = {
       const typeLabel = isEn 
         ? (inv.type === 'quotation' ? 'Quotation' : 'Tax Invoice')
         : (inv.typeNameAr || (inv.type === 'quotation' ? 'عرض سعر' : 'فاتورة ضريبية'));
-      const statusText = inv.remainingAmount <= 0
+      const isPaid = (inv.paymentMethod !== 'credit') || (inv.remainingAmount <= 0);
+      const statusText = isPaid
         ? (isEn ? 'Paid in Full' : 'مدفوع بالكامل')
         : ((isEn ? 'Due: ' : 'متبقي: ') + (inv.remainingAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }));
-      const statusColor = inv.remainingAmount <= 0 ? '#059669' : '#d97706';
+      const statusColor = isPaid ? '#059669' : '#d97706';
       const custName = inv.customer && inv.customer.name ? inv.customer.name : (isEn ? 'Cash Customer' : 'عميل نقدي');
 
       return `
