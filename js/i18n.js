@@ -125,13 +125,17 @@ const I18N = {
       en: 'Document Type',
       ar: 'نوع المستند'
     },
-    optQuotation: {
-      en: 'Sales Quotation (عرض سعر مبيعات)',
-      ar: 'عرض سعر مبيعات (Sales Quotation)'
+    optSimplifiedTaxInvoice: {
+      en: 'Simplified Tax Invoice (فاتورة ضريبية مبسطة)',
+      ar: 'فاتورة ضريبية مبسطة (Simplified Tax Invoice)'
     },
     optTaxInvoice: {
       en: 'Tax Invoice (فاتورة ضريبية)',
       ar: 'فاتورة ضريبية (Tax Invoice)'
+    },
+    optQuotation: {
+      en: 'Sales Quotation (عرض سعر مبيعات)',
+      ar: 'عرض سعر مبيعات (Sales Quotation)'
     },
     lblDocNumber: {
       en: 'Sequential Doc No.',

@@ -126,10 +126,11 @@
         <!-- Quick Top Bar: Document Type, Number, Date, Payment Method -->
         <div class="form-grid quick-doc-grid" style="margin-bottom: 14px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
           <div class="form-group doc-type-group">
-            <label data-i18n="lblDocType" style="font-weight:700;">Document Type</label>
-            <select class="form-control" id="inv-type" style="font-weight:700; color: #0284c7;" onchange="App.onDocTypeChange()">
-              <option value="quotation" data-i18n="optQuotation">Sales Quotation (عرض سعر مبيعات)</option>
+            <label data-i18n="lblDocType" style="font-weight:700;">Document Type (نوع المستند)</label>
+            <select class="form-control" id="inv-type" style="font-weight:700; color: #9e0e24;" onchange="App.onDocTypeChange()">
+              <option value="simplified_tax_invoice" selected data-i18n="optSimplifiedTaxInvoice">Simplified Tax Invoice (فاتورة ضريبية مبسطة)</option>
               <option value="tax_invoice" data-i18n="optTaxInvoice">Tax Invoice (فاتورة ضريبية)</option>
+              <option value="quotation" data-i18n="optQuotation">Sales Quotation (عرض سعر مبيعات)</option>
             </select>
           </div>
 
@@ -3583,13 +3584,17 @@ const I18N = {
       en: 'Document Type',
       ar: 'نوع المستند'
     },
-    optQuotation: {
-      en: 'Sales Quotation (عرض سعر مبيعات)',
-      ar: 'عرض سعر مبيعات (Sales Quotation)'
+    optSimplifiedTaxInvoice: {
+      en: 'Simplified Tax Invoice (فاتورة ضريبية مبسطة)',
+      ar: 'فاتورة ضريبية مبسطة (Simplified Tax Invoice)'
     },
     optTaxInvoice: {
       en: 'Tax Invoice (فاتورة ضريبية)',
       ar: 'فاتورة ضريبية (Tax Invoice)'
+    },
+    optQuotation: {
+      en: 'Sales Quotation (عرض سعر مبيعات)',
+      ar: 'عرض سعر مبيعات (Sales Quotation)'
     },
     lblDocNumber: {
       en: 'Sequential Doc No.',
@@ -4563,7 +4568,7 @@ const DB = {
 
     const sampleInvoice = {
       id: 'inv_135744',
-      type: 'quotation', // 'quotation' or 'tax_invoice'
+      type: 'simplified_tax_invoice',
       typeNameAr: 'فاتورة ضريبية مبسطة',
       typeNameEn: 'Simplified Tax Invoice',
       number: '135744',
@@ -4955,12 +4960,12 @@ const App = {
     if (existingInvoice) {
       this.currentInvoice = JSON.parse(JSON.stringify(existingInvoice));
     } else {
-      const nextNum = String(settings.nextQuotationNumber || 1).padStart(6, '0');
+      const nextNum = String(settings.nextInvoiceNumber || 1).padStart(6, '0');
       this.currentInvoice = {
         id: null,
-        type: 'quotation',
-        typeNameAr: 'عرض سعر مبيعات',
-        typeNameEn: 'Sales Quotation',
+        type: 'simplified_tax_invoice',
+        typeNameAr: 'فاتورة ضريبية مبسطة',
+        typeNameEn: 'Simplified Tax Invoice',
         number: nextNum,
         date: dateStr,
         hijriDate: HijriConverter.toHijri(dateStr, -1),
@@ -5083,10 +5088,18 @@ const App = {
   },
 
   onDocTypeChange: function() {
-    const docType = document.getElementById('inv-type')?.value || 'quotation';
+    const docType = document.getElementById('inv-type')?.value || 'simplified_tax_invoice';
     this.currentInvoice.type = docType;
-    this.currentInvoice.typeNameAr = docType === 'quotation' ? 'عرض سعر مبيعات' : 'فاتورة ضريبية';
-    this.currentInvoice.typeNameEn = docType === 'quotation' ? 'Sales Quotation' : 'Tax Invoice';
+    if (docType === 'quotation') {
+      this.currentInvoice.typeNameAr = 'عرض سعر مبيعات';
+      this.currentInvoice.typeNameEn = 'Sales Quotation';
+    } else if (docType === 'tax_invoice') {
+      this.currentInvoice.typeNameAr = 'فاتورة ضريبية';
+      this.currentInvoice.typeNameEn = 'Tax Invoice';
+    } else {
+      this.currentInvoice.typeNameAr = 'فاتورة ضريبية مبسطة';
+      this.currentInvoice.typeNameEn = 'Simplified Tax Invoice';
+    }
     
     const settings = DB.getSettings();
     if (!this.currentInvoice.id) {
@@ -6142,8 +6155,10 @@ const App = {
     if (!printEl) return;
 
     // Document title
-    let docTitle = (lbl && lbl.quotationTitle) ? lbl.quotationTitle : 'عرض سعر مبيعات';
-    if (inv.type === 'tax_invoice') {
+    let docTitle = (lbl && lbl.simplifiedTaxInvoiceTitle) ? lbl.simplifiedTaxInvoiceTitle : 'فاتورة ضريبية مبسطة';
+    if (inv.type === 'quotation') {
+      docTitle = (lbl && lbl.quotationTitle) ? lbl.quotationTitle : 'عرض سعر مبيعات';
+    } else if (inv.type === 'tax_invoice') {
       docTitle = (lbl && lbl.taxInvoiceTitle) ? lbl.taxInvoiceTitle : 'فاتورة ضريبية';
     }
 

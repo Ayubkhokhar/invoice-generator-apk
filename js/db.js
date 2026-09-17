@@ -160,7 +160,7 @@ const DB = {
 
     const sampleInvoice = {
       id: 'inv_135744',
-      type: 'quotation', // 'quotation' or 'tax_invoice'
+      type: 'simplified_tax_invoice',
       typeNameAr: 'فاتورة ضريبية مبسطة',
       typeNameEn: 'Simplified Tax Invoice',
       number: '135744',

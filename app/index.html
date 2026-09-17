@@ -126,10 +126,11 @@
         <!-- Quick Top Bar: Document Type, Number, Date, Payment Method -->
         <div class="form-grid quick-doc-grid" style="margin-bottom: 14px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
           <div class="form-group doc-type-group">
-            <label data-i18n="lblDocType" style="font-weight:700;">Document Type</label>
-            <select class="form-control" id="inv-type" style="font-weight:700; color: #0284c7;" onchange="App.onDocTypeChange()">
-              <option value="quotation" data-i18n="optQuotation">Sales Quotation (عرض سعر مبيعات)</option>
+            <label data-i18n="lblDocType" style="font-weight:700;">Document Type (نوع المستند)</label>
+            <select class="form-control" id="inv-type" style="font-weight:700; color: #9e0e24;" onchange="App.onDocTypeChange()">
+              <option value="simplified_tax_invoice" selected data-i18n="optSimplifiedTaxInvoice">Simplified Tax Invoice (فاتورة ضريبية مبسطة)</option>
               <option value="tax_invoice" data-i18n="optTaxInvoice">Tax Invoice (فاتورة ضريبية)</option>
+              <option value="quotation" data-i18n="optQuotation">Sales Quotation (عرض سعر مبيعات)</option>
             </select>
           </div>
 
