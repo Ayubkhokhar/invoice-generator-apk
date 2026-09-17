@@ -5669,50 +5669,163 @@ const App = {
     const prefix = (inv.type === 'quotation') ? 'Quotation' : 'Invoice';
     const filename = `${prefix}-${inv.number || '000001'}.pdf`;
 
-    if (typeof html2pdf !== 'undefined') {
-      const opt = {
-        margin: [0, 0, 0, 0],
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          scrollY: 0,
-          letterRendering: false,
-          windowWidth: 794
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
+    const dlBtn = document.querySelector('button[onclick*="downloadPdf"]');
+    const origText = dlBtn ? dlBtn.innerHTML : '';
+    if (dlBtn) dlBtn.innerHTML = '⏳ Generating PDF...';
 
-      const dlBtn = document.querySelector('button[onclick*="downloadPdf"]');
-      const origText = dlBtn ? dlBtn.innerHTML : '';
-      if (dlBtn) dlBtn.innerHTML = '⏳ Generating PDF...';
+    const self = this;
 
-      html2pdf().set(opt).from(printEl).toPdf().get('pdf').then(function(pdf) {
-        // Strictly guarantee 1 single page by removing any accidental spillover pages
-        const totalPages = pdf.internal.getNumberOfPages();
-        for (let p = totalPages; p > 1; p--) {
-          pdf.deletePage(p);
+    const createPdfFromCanvas = (canvas) => {
+      try {
+        const jsPdfObj = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (typeof jsPDF !== 'undefined' ? jsPDF : (typeof html2pdf !== 'undefined' && html2pdf().jsPDF ? html2pdf().jsPDF : null));
+        if (jsPdfObj) {
+          const doc = new jsPdfObj({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+          });
+          const imgData = canvas.toDataURL('image/jpeg', 0.98);
+          doc.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+
+          if (dlBtn) dlBtn.innerHTML = origText;
+
+          if (window.AndroidPrint && typeof window.AndroidPrint.savePdf === 'function') {
+            const pdfDataUri = doc.output('datauristring');
+            window.AndroidPrint.savePdf(pdfDataUri, filename);
+          } else {
+            doc.save(filename);
+          }
+          return true;
         }
+      } catch (e) {
+        console.warn('Direct jsPDF error, falling back to html2pdf:', e);
+      }
+      return false;
+    };
 
-        if (dlBtn) dlBtn.innerHTML = origText;
+    const renderViaSvgForeignObject = async () => {
+      const width = printEl.offsetWidth || 794;
+      const height = printEl.offsetHeight || 1123;
 
-        // Check if running inside Android APK with native AndroidPrint bridge
-        if (window.AndroidPrint && typeof window.AndroidPrint.savePdf === 'function') {
-          const pdfDataUri = pdf.output('datauristring');
-          window.AndroidPrint.savePdf(pdfDataUri, filename);
-        } else {
-          pdf.save(filename);
+      let styles = '';
+      for (let i = 0; i < document.styleSheets.length; i++) {
+        try {
+          const rules = document.styleSheets[i].cssRules;
+          if (rules) {
+            for (let j = 0; j < rules.length; j++) {
+              styles += rules[j].cssText + '\n';
+            }
+          }
+        } catch (e) {}
+      }
+
+      const clone = printEl.cloneNode(true);
+
+      // Convert any <img> src to base64 data URI if not already
+      const imgs = clone.querySelectorAll('img');
+      for (let imgEl of imgs) {
+        if (imgEl.src && !imgEl.src.startsWith('data:')) {
+          try {
+            const res = await fetch(imgEl.src);
+            const blob = await res.blob();
+            const dataUri = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.readAsDataURL(blob);
+            });
+            imgEl.src = dataUri;
+          } catch (e) {}
         }
-      }).catch(function(err) {
-        if (dlBtn) dlBtn.innerHTML = origText;
-        console.error('Error generating PDF:', err);
-        alert('Error generating PDF: ' + (err.message || err));
+      }
+
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(clone);
+      const htmlContent = wrapper.innerHTML;
+
+      const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+        <foreignObject width="100%" height="100%">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="background:#ffffff; font-family:'Segoe UI', Tahoma, Arial, 'Noto Sans Arabic', sans-serif; letter-spacing: normal !important;">
+            <style>
+              ${styles}
+              * { letter-spacing: normal !important; }
+            </style>
+            ${htmlContent}
+          </div>
+        </foreignObject>
+      </svg>`;
+
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const scale = 2;
+          canvas.width = width * scale;
+          canvas.height = height * scale;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.scale(scale, scale);
+          ctx.drawImage(img, 0, 0);
+          URL.revokeObjectURL(url);
+          resolve(canvas);
+        };
+
+        img.onerror = function(err) {
+          URL.revokeObjectURL(url);
+          reject(err);
+        };
+
+        img.src = url;
       });
-    } else {
-      this.executePrint();
-    }
+    };
+
+    renderViaSvgForeignObject()
+      .then(canvas => {
+        const success = createPdfFromCanvas(canvas);
+        if (!success) throw new Error('Could not create PDF from canvas');
+      })
+      .catch(err => {
+        console.warn('SVG foreignObject render failed, using html2pdf fallback:', err);
+        if (typeof html2pdf !== 'undefined') {
+          const opt = {
+            margin: [0, 0, 0, 0],
+            filename: filename,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: {
+              scale: 2,
+              useCORS: true,
+              logging: false,
+              scrollY: 0,
+              letterRendering: false,
+              windowWidth: 794
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          };
+
+          html2pdf().set(opt).from(printEl).toPdf().get('pdf').then(function(pdf) {
+            const totalPages = pdf.internal.getNumberOfPages();
+            for (let p = totalPages; p > 1; p--) {
+              pdf.deletePage(p);
+            }
+            if (dlBtn) dlBtn.innerHTML = origText;
+            if (window.AndroidPrint && typeof window.AndroidPrint.savePdf === 'function') {
+              const pdfDataUri = pdf.output('datauristring');
+              window.AndroidPrint.savePdf(pdfDataUri, filename);
+            } else {
+              pdf.save(filename);
+            }
+          }).catch(function(e) {
+            if (dlBtn) dlBtn.innerHTML = origText;
+            self.executePrint();
+          });
+        } else {
+          if (dlBtn) dlBtn.innerHTML = origText;
+          self.executePrint();
+        }
+      });
   },
 
   executePrint: function() {
@@ -5950,14 +6063,14 @@ const App = {
         <!-- 2. Sub-Header Strip -->
         <div class="zain-sub-header">
           <div class="zain-sub-left">
-            <span>Page 1 of 1</span> &nbsp;&nbsp; <span dir="rtl">${inv.pageInfo || 'رقم الصفحة : 1'}</span>
+            <span>Page : 1 / 1</span>
           </div>
           <div class="zain-sub-center">
             ${docTitle}
           </div>
           <div class="zain-sub-right">
-            <span>C.R No. : <b>${settings.crNumber || '4030294347'}</b> <span dir="rtl">: رقم س ت</span></span><br>
-            <span>VAT No. : <b>${settings.taxNumber || '311186943400003'}</b> <span dir="rtl">: الرقم الضريبي</span></span>
+            <span>C.R No. : <b>${settings.crNumber || '4030294347'}</b></span><br>
+            <span>VAT No. : <b>${settings.taxNumber || '311186943400003'}</b></span>
           </div>
         </div>
 
@@ -5966,7 +6079,7 @@ const App = {
           <!-- Full Width Customer Name Bar -->
           <div class="zain-customer-bar">
             <div>Customer Name: <span style="color:#9e0e24; font-size:10.5px; font-weight:900;">${custName}</span></div>
-            <div dir="rtl"><span style="color:#9e0e24; font-size:10.5px; font-weight:900;">${custName}</span> : اسم العميل</div>
+            <div dir="rtl">اسم العميل : <span style="color:#9e0e24; font-size:10.5px; font-weight:900;">${custName}</span></div>
           </div>
 
           <!-- 3-Column Grid -->
