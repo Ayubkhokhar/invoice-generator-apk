@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mayar-invoices-v7';
+const CACHE_NAME = 'mayar-invoices-v8';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -13,6 +13,7 @@ const ASSETS_TO_CACHE = [
   './js/db.js',
   './js/app.js',
   './assets/logo.svg',
+  './assets/zain_logo.svg',
   './assets/icon-192.png',
   './assets/icon-512.png'
 ];

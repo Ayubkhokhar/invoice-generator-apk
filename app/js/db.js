@@ -20,10 +20,21 @@ const DB = {
 
   seedDefaultData: function() {
     const defaultSettings = {
-      companyNameAr: 'شركة معيار جدة للتجارة للمواد الغذائية',
-      companyNameEn: 'Mayar Jeddah Trading Company',
-      taxNumber: '311193748100003',
-      crNumber: '4030142891',
+      companyNameAr: 'شركة زين المتقدمة التجارية بالجملة',
+      companyNameEn: 'ZAIN ADVANCED TRADING COMPANY',
+      activityAr: 'خردوات والقرطاسية وأدوات التجميل بالجملة',
+      activityEn: 'Sundries, Stationary & Cosmetics Wholesale',
+      addressAr: 'جدة - المحجر - دوار النجوم - مركز النجوم',
+      addressEn: 'Jeddah - Mahjar - Dawar Nojoom - Nujoom Center',
+      buildingAr: 'حي المحجر - رقم المبنى ٨٢٠٥ - رقم إضافي ٣٧٣١',
+      buildingEn: 'Mahjar - Building No. 8205 - Secondary No. 3731',
+      postalAr: 'رمز بريدي ٢٢٤٢١ - جدة - المملكة العربية السعودية',
+      postalEn: 'Postal Code 22421 - Jeddah - K.S.A',
+      phonesAr: '012 608 6220 / 055 886 3822 / 050 587 8700',
+      phonesEn: '012 608 6220 / 055 886 3822 / 050 587 8700',
+      email: 'wholesalezain@gmail.com',
+      taxNumber: '311186943400003',
+      crNumber: '4030294347',
       branch: 'فرع 1 - 001',
       costCenter: 'م.تكلفة 1 - 001',
       warehouse: 'مستودع 1 - 01',
@@ -33,12 +44,19 @@ const DB = {
       exchangeRate: 1,
       defaultVatRate: 15,
       nextQuotationNumber: 64,
-      nextInvoiceNumber: 3458,
+      nextInvoiceNumber: 135745,
       showZatcaQr: true,
-      qrType: 'website',
+      qrType: 'zatca',
       websiteUrl: 'https://www.mayarjeddah.com',
-      logoUrl: '',
-      notes: ''
+      logoUrl: 'assets/zain_logo.svg',
+      notes: '',
+      bank1Name: 'SNB',
+      bank1Account: 'شركة زين المتقدمة التجارية',
+      bank1Iban: 'SA0510000011500000186902',
+      bank2Name: 'Al Rajhi Bank',
+      bank2Account: 'شركة زين المتقدمة التجارية',
+      bank2Iban: 'SA0880000 471608010461457',
+      activeTemplate: 'zain'
     };
 
     const defaultCategories = [
@@ -49,10 +67,36 @@ const DB = {
     ];
 
     const defaultUnits = [
-      'كرتون', 'حبة', 'جالون', 'طرد', 'درزن', 'كيلو', 'لتر', 'علبة'
+      'كرتون', 'حبة', 'جالون', 'طرد', 'درزن', 'كيلو', 'لتر', 'علبة', 'PAK', 'DOZ'
     ];
 
     const defaultProducts = [
+      {
+        id: 'prod_101',
+        code: '1010101681',
+        name: 'GLOVES COTTON TAIWAN - WHITE',
+        nameAr: 'جوانتي ابيض تايواني',
+        category: 'عام',
+        unit: 'PAK',
+        packing: '1X48X10',
+        price: 5.00,
+        vatRate: 15,
+        stock: 1000,
+        notes: ''
+      },
+      {
+        id: 'prod_102',
+        code: '1006542',
+        name: 'SHALIS SPRAY 50 ML - WOMEN',
+        nameAr: 'شاليسنسائى 50 مل',
+        category: 'عام',
+        unit: 'DOZ',
+        packing: '1X6X8',
+        price: 298.00,
+        vatRate: 15,
+        stock: 500,
+        notes: ''
+      },
       {
         id: 'prod_96',
         code: '96',
@@ -60,6 +104,7 @@ const DB = {
         nameEn: 'Clorox (1x18)',
         category: 'منظفات',
         unit: 'كرتون',
+        packing: '1X18',
         price: 84.00,
         vatRate: 15,
         stock: 500,
@@ -72,21 +117,10 @@ const DB = {
         nameEn: 'Clorox (8x1.89)',
         category: 'منظفات',
         unit: 'كرتون',
+        packing: '1X8',
         price: 65.00,
         vatRate: 15,
         stock: 450,
-        notes: ''
-      },
-      {
-        id: 'prod_94',
-        code: '94',
-        name: 'كلوركس كبير 1* 3.7*6جوالين',
-        nameEn: 'Clorox (3.78,1x6)',
-        category: 'منظفات',
-        unit: 'كرتون',
-        price: 86.00,
-        vatRate: 15,
-        stock: 350,
         notes: ''
       }
     ];
@@ -95,14 +129,17 @@ const DB = {
       {
         id: 'cust_1',
         name: 'سونو',
-        nameEn: 'Sono',
+        nameEn: 'SONU',
         taxNumber: 'لايوجد',
         crNumber: '',
-        address: 'جدة',
-        phone: '',
+        address: 'جدة - شارع المحجر',
+        district: 'المحجر',
+        cityName: 'جدة',
+        countryName: 'المملكة العربية السعودية',
+        phone: '0558863822',
         destination: 'محلي',
-        representative: 'ممثل العميل',
-        balance: 'محلي'
+        representative: 'SONU',
+        balance: '0.00'
       },
       {
         id: 'cust_2',
@@ -111,6 +148,9 @@ const DB = {
         taxNumber: '311193748100003',
         crNumber: '4030142891',
         address: 'حي المحجر، جده',
+        district: 'المحجر',
+        cityName: 'جدة',
+        countryName: 'المملكة العربية السعودية',
         phone: '+966-240742691370',
         destination: 'محلي',
         representative: '',
@@ -119,14 +159,14 @@ const DB = {
     ];
 
     const sampleInvoice = {
-      id: 'inv_000063',
+      id: 'inv_135744',
       type: 'quotation', // 'quotation' or 'tax_invoice'
-      typeNameAr: 'عرض سعر مبيعات',
-      typeNameEn: 'Sales Quotation',
-      number: '000063',
+      typeNameAr: 'فاتورة ضريبية مبسطة',
+      typeNameEn: 'Simplified Tax Invoice',
+      number: '135744',
       date: '2026-09-08',
       hijriDate: '1448-03-25',
-      time: '18:02:34',
+      time: '10:15:20',
       orderNo: '',
       refNo: '',
       currency: 'SR ريال',
@@ -134,73 +174,68 @@ const DB = {
       costCenter: 'م.تكلفة 1 - 001',
       salesRep: '10-المدير',
       warehouse: 'مستودع 1 - 01',
-      pageInfo: '1 من 1',
+      pageInfo: 'Page 1 of 1',
+      paymentMethod: 'cash',
       customer: {
         id: 'cust_1',
-        name: 'سونو',
+        name: 'سونو / SONU',
         taxNumber: 'لايوجد',
         crNumber: '',
-        address: '',
+        address: 'جدة - شارع المحجر',
+        district: 'المحجر',
+        cityName: 'جدة',
+        countryName: 'المملكة العربية السعودية',
+        phone: '0558863822',
         destination: 'محلي',
-        representative: 'ممثل العميل',
-        balance: 'محلي',
-        competitors: 'المنافسين'
+        representative: 'SONU',
+        balance: '0.00',
+        competitors: ''
       },
       items: [
         {
           sr: 1,
-          code: '96',
-          description: 'كلوركس وسط ابو 1* 18*950مل',
-          unit: 'كرتون',
-          quantity: 50.00,
-          price: 84.00,
-          net: 4200.00,
+          code: '1010101681',
+          description: 'GLOVES COTTON TAIWAN - WHITE / جوانتي ابيض تايواني',
+          unit: 'PAK',
+          packing: '1X48X10',
+          quantity: 2.00,
+          price: 5.00,
+          net: 10.00,
           vatRate: 15,
-          vatAmount: 630.00,
-          totalWithVat: 4830.00
+          vatAmount: 1.50,
+          totalWithVat: 11.50
         },
         {
           sr: 2,
-          code: '95',
-          description: 'كلوركس 1* 1.8*8جوالين',
-          unit: 'كرتون',
-          quantity: 50.00,
-          price: 65.00,
-          net: 3250.00,
+          code: '1006542',
+          description: 'SHALIS SPRAY 50 ML - WOMEN / شاليسنسائى 50 مل',
+          unit: 'DOZ',
+          packing: '1X6X8',
+          quantity: 0.25,
+          price: 298.00,
+          net: 74.50,
           vatRate: 15,
-          vatAmount: 487.50,
-          totalWithVat: 3737.50
-        },
-        {
-          sr: 3,
-          code: '94',
-          description: 'كلوركس كبير 1* 3.7*6جوالين',
-          unit: 'كرتون',
-          quantity: 50.00,
-          price: 86.00,
-          net: 4300.00,
-          vatRate: 15,
-          vatAmount: 645.00,
-          totalWithVat: 4945.00
+          vatAmount: 11.18,
+          totalWithVat: 85.68
         }
       ],
-      totalQuantity: 150.00,
-      subtotal: 11750.00,
+      totalQuantity: 2.25,
+      subtotal: 84.50,
       additions: 0.00,
-      grossTotal: 11750.00,
+      grossTotal: 84.50,
       discountPercent: 0,
       discountAmount: 0.00,
-      netTotal: 11750.00,
-      vatTotal: 1762.50,
-      grandTotal: 13512.50,
-      tafqeet: 'فقط ثلاثةعشرالف وخمسمائة واثنى عشر ريال و خمسون هللة لاغير',
-      paidAmount: 0.00,
-      remainingAmount: 13512.50,
-      user: '10-المدير',
+      netTotal: 84.50,
+      vatTotal: 12.68,
+      grandTotal: 97.18,
+      tafqeet: 'فقط سبعة وتسعون ريال و ثمانية عشر هللة لاغير',
+      paidAmount: 97.18,
+      remainingAmount: 0.00,
+      user: 'FARUK 18.15 qa',
       versionNo: 0,
       notes: '',
-      status: 'unpaid',
-      createdAt: '2026-09-08T18:02:34Z'
+      status: 'paid',
+      createdAt: '2026-09-08T10:15:20Z'
     };
 
     localStorage.setItem(this.KEYS.SETTINGS, JSON.stringify(defaultSettings));
@@ -216,10 +251,21 @@ const DB = {
     const s = localStorage.getItem(this.KEYS.SETTINGS);
     const parsed = s ? JSON.parse(s) : {};
     return Object.assign({
-      companyNameAr: 'شركة معيار جدة للتجارة للمواد الغذائية',
-      companyNameEn: 'Mayar Jeddah Trading Company',
-      taxNumber: '311193748100003',
-      crNumber: '4030142891',
+      companyNameAr: 'شركة زين المتقدمة التجارية بالجملة',
+      companyNameEn: 'ZAIN ADVANCED TRADING COMPANY',
+      activityAr: 'خردوات والقرطاسية وأدوات التجميل بالجملة',
+      activityEn: 'Sundries, Stationary & Cosmetics Wholesale',
+      addressAr: 'جدة - المحجر - دوار النجوم - مركز النجوم',
+      addressEn: 'Jeddah - Mahjar - Dawar Nojoom - Nujoom Center',
+      buildingAr: 'حي المحجر - رقم المبنى ٨٢٠٥ - رقم إضافي ٣٧٣١',
+      buildingEn: 'Mahjar - Building No. 8205 - Secondary No. 3731',
+      postalAr: 'رمز بريدي ٢٢٤٢١ - جدة - المملكة العربية السعودية',
+      postalEn: 'Postal Code 22421 - Jeddah - K.S.A',
+      phonesAr: '012 608 6220 / 055 886 3822 / 050 587 8700',
+      phonesEn: '012 608 6220 / 055 886 3822 / 050 587 8700',
+      email: 'wholesalezain@gmail.com',
+      taxNumber: '311186943400003',
+      crNumber: '4030294347',
       branch: 'فرع 1 - 001',
       costCenter: 'م.تكلفة 1 - 001',
       warehouse: 'مستودع 1 - 01',
@@ -229,12 +275,19 @@ const DB = {
       exchangeRate: 1,
       defaultVatRate: 15,
       nextQuotationNumber: 64,
-      nextInvoiceNumber: 3458,
+      nextInvoiceNumber: 135745,
       showZatcaQr: true,
-      qrType: 'website',
+      qrType: 'zatca',
       websiteUrl: 'https://www.mayarjeddah.com',
-      logoUrl: '',
-      notes: ''
+      logoUrl: 'assets/zain_logo.svg',
+      notes: '',
+      bank1Name: 'SNB',
+      bank1Account: 'شركة زين المتقدمة التجارية',
+      bank1Iban: 'SA0510000011500000186902',
+      bank2Name: 'Al Rajhi Bank',
+      bank2Account: 'شركة زين المتقدمة التجارية',
+      bank2Iban: 'SA0880000 471608010461457',
+      activeTemplate: 'zain'
     }, parsed);
   },
   saveSettings: function(settings) {

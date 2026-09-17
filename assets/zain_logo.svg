@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 60" width="160" height="60">
+  <rect x="2" y="2" width="156" height="56" rx="28" fill="#ffffff" stroke="#9e0e24" stroke-width="3"/>
+  <g transform="translate(80, 37)" text-anchor="middle">
+    <text x="30" y="-2" font-family="'Cairo', 'Arial', sans-serif" font-weight="900" font-size="26" fill="#9e0e24">زين</text>
+    <text x="-25" y="-1" font-family="'Arial Black', Impact, sans-serif" font-weight="900" font-size="20" fill="#9e0e24" letter-spacing="1">ZAIN</text>
+  </g>
+</svg>

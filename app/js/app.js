@@ -769,11 +769,17 @@ const App = {
 
       this.currentInvoice = inv;
       const lang = pLang || (typeof I18N !== 'undefined' ? I18N.printLang : 'bilingual');
-      this.renderPrintInvoiceTemplate(inv, lang);
+      const tpl = this.currentPrintTemplate || DB.getSettings().activeTemplate || 'zain';
+      this.currentPrintTemplate = tpl;
+
+      this.renderPrintInvoiceTemplate(inv, lang, tpl);
 
       // Update active button state in print modal
       document.querySelectorAll('.btn-print-lang').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.plang === lang);
+      });
+      document.querySelectorAll('.btn-print-tpl').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.ptpl === tpl);
       });
 
       // Open print preview modal
@@ -790,6 +796,16 @@ const App = {
   setPrintLanguage: function(lang) {
     if (typeof I18N !== 'undefined') {
       I18N.setPrintLanguage(lang);
+    }
+  },
+
+  setPrintTemplate: function(tpl) {
+    this.currentPrintTemplate = tpl;
+    document.querySelectorAll('.btn-print-tpl').forEach(b => {
+      b.classList.toggle('active', b.dataset.ptpl === tpl);
+    });
+    if (this.currentInvoice) {
+      this.renderPrintInvoiceTemplate(this.currentInvoice, null, tpl);
     }
   },
 
@@ -856,12 +872,12 @@ const App = {
     window.print();
   },
 
-  renderPrintInvoiceTemplate: function(inv, langOverride) {
+  renderPrintInvoiceTemplate: function(inv, langOverride, templateOverride) {
     const settings = DB.getSettings();
     const printEl = document.getElementById('invoice-print-wrapper');
     if (!printEl) return;
 
-    const pLang = langOverride || (typeof I18N !== 'undefined' ? I18N.printLang : 'ar') || 'ar';
+    const pLang = langOverride || (typeof I18N !== 'undefined' ? I18N.printLang : 'bilingual') || 'bilingual';
     const L = (typeof I18N !== 'undefined') ? I18N.getInvoiceLabels(pLang) : null;
     const lbl = L || {
       page: 'الصفحة:',
@@ -938,10 +954,10 @@ const App = {
           qrCaptionText = `<div style="font-weight:800;color:#002060;">زيارة الموقع / Scan Website</div><div style="font-size:10px;font-weight:800;color:#0284c7;margin-top:2px;">${displayHost}</div>`;
         }
       } else {
-        const timestamp = `${inv.date}T${inv.time || '12:00:00'}Z`;
+        const timestamp = `${inv.date}T${inv.time || '10:15:20'}Z`;
         qrPayload = Zatca.generateQrPayload(
           settings.companyNameAr || settings.companyNameEn || 'Company',
-          settings.taxNumber || '311193748100003',
+          settings.taxNumber || '311186943400003',
           timestamp,
           inv.grandTotal,
           inv.vatTotal
@@ -957,20 +973,360 @@ const App = {
       }
     }
 
-    // Logo image / SVG in middle of invoice header
+    // Logo image / SVG
     let logoHtml = '';
     if (settings.logoUrl && settings.logoUrl !== 'none') {
-      logoHtml = `<img src="${settings.logoUrl}" alt="Logo" style="max-height: 52px; max-width: 140px; object-fit: contain;">`;
+      logoHtml = `<img src="${settings.logoUrl}" alt="Logo" style="max-height: 48px; max-width: 130px; object-fit: contain;">`;
     } else if (settings.logoUrl === 'none') {
       logoHtml = '';
     } else {
-      logoHtml = `<img src="assets/logo.svg" alt="Logo" style="max-height: 52px; max-width: 140px; object-fit: contain;">`;
+      logoHtml = `<img src="assets/zain_logo.svg" alt="Logo" style="max-height: 48px; max-width: 130px; object-fit: contain;">`;
     }
 
-    // Build Table Rows matching exact سلنو.pdf
+    // Tafqeet
+    let arTafqeet = '';
+    let enTafqeet = '';
+    let tafqeetText = '';
+    try {
+      arTafqeet = (typeof Tafqeet !== 'undefined' && Tafqeet.toArabicWords) ? Tafqeet.toArabicWords(inv.grandTotal) : '';
+      enTafqeet = (typeof Tafqeet !== 'undefined' && Tafqeet.toEnglishWords) ? Tafqeet.toEnglishWords(inv.grandTotal, 'Saudi Riyal', 'Halalas') : '';
+      if (pLang === 'ar') {
+        tafqeetText = arTafqeet;
+      } else if (pLang === 'en') {
+        tafqeetText = enTafqeet;
+      } else {
+        tafqeetText = `<div>${arTafqeet}</div><div style="font-size: 10px; font-weight: 600; color: #0369a1; margin-top: 1px;">${enTafqeet}</div>`;
+      }
+    } catch (e) {
+      console.error('Tafqeet error:', e);
+    }
+
+    const tpl = templateOverride || this.currentPrintTemplate || settings.activeTemplate || 'zain';
+
+    if (tpl === 'mayar') {
+      this.renderMayarInvoiceTemplate(inv, pLang, settings, lbl, fmt, qrSvgHtml, logoHtml, qrCaptionText, tafqeetText);
+    } else {
+      this.renderZainInvoiceTemplate(inv, pLang, settings, fmt, qrSvgHtml, logoHtml, arTafqeet, enTafqeet);
+    }
+  },
+
+  // -------------------------------------------------------------------------
+  // 🔴 ZAIN ADVANCED TRADING RED CONTINUOUS DOT-MATRIX FORMAT (Exact 1:1)
+  // -------------------------------------------------------------------------
+  renderZainInvoiceTemplate: function(inv, pLang, settings, fmt, qrSvgHtml, logoHtml, arTafqeet, enTafqeet) {
+    const printEl = document.getElementById('invoice-print-wrapper');
+    if (!printEl) return;
+
+    // Document Title
+    let docTitle = 'فاتورة ضريبية مبسطة';
+    if (inv.type === 'quotation') {
+      docTitle = (pLang === 'en') ? 'SALES QUOTATION' : ((pLang === 'bilingual') ? 'عرض سعر مبيعات / SALES QUOTATION' : 'عرض سعر مبيعات');
+    } else if (inv.type === 'tax_invoice') {
+      docTitle = (pLang === 'en') ? 'TAX INVOICE' : ((pLang === 'bilingual') ? 'فاتورة ضريبية / TAX INVOICE' : 'فاتورة ضريبية');
+    } else {
+      docTitle = (pLang === 'en') ? 'SIMPLIFIED TAX INVOICE' : ((pLang === 'bilingual') ? 'فاتورة ضريبية مبسطة / SIMPLIFIED TAX INVOICE' : 'فاتورة ضريبية مبسطة');
+    }
+
+    const isCash = (!inv.paymentMethod || inv.paymentMethod === 'cash');
+    const payMethodText = isCash ? 'CASH / نقدي' : (inv.paymentMethod === 'credit' ? 'CREDIT / آجل' : (inv.paymentMethod === 'bank' ? 'BANK / تحويل' : 'CARD / شبكة'));
+
+    const cust = inv.customer || {};
+    const custName = cust.name || 'نقدي / SONU';
+    const custDist = cust.district || (cust.address ? cust.address.split('-')[0].trim() : 'المحجر');
+    const custPostal = cust.postalCode || '22421';
+    const custCity = cust.cityName || cust.destination || 'جدة';
+    const custCountry = cust.countryName || 'المملكة العربية السعودية';
+    const custPhone = cust.phone || '';
+    const custBalance = cust.balance || '0.00';
+    const custCr = cust.crNumber || '';
+    const custTax = cust.taxNumber || 'لايوجد';
+    const custBuilding = cust.buildingNo || '';
+    const custStreet = cust.streetName || (cust.address || '');
+    const custSecondary = cust.secondaryNo || '';
+    const custArea = cust.areaName || cust.destination || 'جدة';
+
+    const rowsHtml = (inv.items || []).map((item, idx) => `
+      <tr>
+        <td style="width: 22px; text-align: center; font-weight: 700;">${item.sr || (idx + 1)}</td>
+        <td style="width: 48px; text-align: center; font-weight: 700; color: #1e293b;">${item.code || ''}</td>
+        <td class="desc-cell" style="font-weight: 700; color: #0f172a;">${item.description || ''}</td>
+        <td style="width: 38px; text-align: center; font-weight: 800;">${fmt(item.quantity)}</td>
+        <td style="width: 36px; text-align: center;">${item.unit || 'كرتون'}</td>
+        <td style="width: 46px; text-align: center;">${fmt(item.price)}</td>
+        <td style="width: 46px; text-align: center; color: #475569;">${item.packing || '-'}</td>
+        <td style="width: 52px; text-align: center; font-weight: 800;">${fmt(item.net)}</td>
+        <td style="width: 30px; text-align: center; font-weight: 700; color: #9e0e24;">${(item.vatRate !== undefined && item.vatRate !== null) ? item.vatRate : 15}</td>
+        <td style="width: 44px; text-align: center; font-weight: 700; color: #b91c1c;">${fmt(item.vatAmount)}</td>
+        <td style="width: 54px; text-align: center; font-weight: 900; color: #111827;">${fmt(item.totalWithVat)}</td>
+      </tr>
+    `).join('');
+
+    printEl.innerHTML = `
+      <div class="zain-inv-container">
+        <!-- 1. Red Header Box -->
+        <div class="zain-top-header">
+          <!-- Left: English Details -->
+          <div class="zain-header-left">
+            <div class="comp-title">${settings.companyNameEn || 'ZAIN ADVANCED TRADING COMPANY'}</div>
+            <div style="font-style: italic; opacity: 0.95; margin-bottom: 2px;">${settings.activityEn || 'Sundries, Stationary & Cosmetics Wholesale'}</div>
+            <div>${settings.addressEn || 'Jeddah - Mahjar - Dawar Nojoom - Nujoom Center'}</div>
+            <div>${settings.buildingEn || 'Mahjar - Building No. 8205 - Secondary No. 3731'}</div>
+            <div>${settings.postalEn || 'Postal Code 22421 - Jeddah - K.S.A'}</div>
+            <div style="margin-top: 2px; font-weight: 700;">${settings.phonesEn || '📞 012 608 6220 📱 055 886 3822 📱 050 587 8700'}</div>
+          </div>
+
+          <!-- Center: Logo & Email -->
+          <div class="zain-header-center">
+            <div class="zain-logo-badge">
+              <img src="${settings.logoUrl || 'assets/zain_logo.svg'}" alt="Logo">
+            </div>
+            <div class="zain-header-email">E-mail: ${settings.email || 'wholesalezain@gmail.com'}</div>
+          </div>
+
+          <!-- Right: Arabic Details -->
+          <div class="zain-header-right">
+            <div class="comp-title">${settings.companyNameAr || 'شركة زين المتقدمة التجارية بالجملة'}</div>
+            <div style="opacity: 0.95; margin-bottom: 2px;">${settings.activityAr || 'خردوات والقرطاسية وأدوات التجميل بالجملة'}</div>
+            <div>${settings.addressAr || 'جدة - المحجر - دوار النجوم - مركز النجوم'}</div>
+            <div>${settings.buildingAr || 'حي المحجر - رقم المبنى ٨٢٠٥ - رقم إضافي ٣٧٣١'}</div>
+            <div>${settings.postalAr || 'رمز بريدي ٢٢٤٢١ - جدة - المملكة العربية السعودية'}</div>
+            <div style="margin-top: 2px; font-weight: 700;">${settings.phonesAr || '📞 ٠١٢٦٠٨٦٢٢٠ 📱 ٠٥٥٨٨٦٣٨٢٢ 📱 ٠٥٠٥٨٧٨٧٠٠'}</div>
+          </div>
+        </div>
+
+        <!-- 2. Sub-Header Strip -->
+        <div class="zain-sub-header">
+          <div class="zain-sub-left">
+            <span>Page 1 of 1</span> &nbsp;&nbsp; <span>${inv.pageInfo || 'رقم الصفحة : 1'}</span>
+          </div>
+          <div class="zain-sub-center">
+            ${docTitle}
+          </div>
+          <div class="zain-sub-right">
+            <span>C.R No. : <b>${settings.crNumber || '4030294347'}</b> : رقم س ت</span><br>
+            <span>VAT No. : <b>${settings.taxNumber || '311186943400003'}</b> : الرقم الضريبي</span>
+          </div>
+        </div>
+
+        <!-- 3. Customer & Invoice Meta Box -->
+        <div class="zain-meta-section">
+          <!-- Full Width Customer Name Bar -->
+          <div class="zain-customer-bar">
+            <div>Customer Name: <span style="color:#9e0e24; font-size:10.5px; font-weight:900;">${custName}</span></div>
+            <div><span style="color:#9e0e24; font-size:10.5px; font-weight:900;">${custName}</span> : اسم العميل</div>
+          </div>
+
+          <!-- 3-Column Grid -->
+          <div class="zain-meta-grid">
+            <!-- Left Column: Customer Address -->
+            <div class="zain-meta-col-left">
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">Payment Method:</span>
+                <span class="zain-field-val" style="color: #9e0e24;">${payMethodText}</span>
+                <span class="zain-field-lbl-ar">: طريقة الدفع</span>
+              </div>
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">District :</span>
+                <span class="zain-field-val">${custDist}</span>
+                <span class="zain-field-lbl-ar">: الحي</span>
+              </div>
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">Postal Code :</span>
+                <span class="zain-field-val">${custPostal}</span>
+                <span class="zain-field-lbl-ar">: رمز البريدي</span>
+              </div>
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">City Name :</span>
+                <span class="zain-field-val">${custCity}</span>
+                <span class="zain-field-lbl-ar">: إسم المدينة</span>
+              </div>
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">Country Name :</span>
+                <span class="zain-field-val">${custCountry}</span>
+                <span class="zain-field-lbl-ar">: اسم البلد</span>
+              </div>
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">Mobile :</span>
+                <span class="zain-field-val">${custPhone}</span>
+                <span class="zain-field-lbl-ar">: رقم الاتصال</span>
+              </div>
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">Old Balance :</span>
+                <span class="zain-field-val">${custBalance}</span>
+                <span class="zain-field-lbl-ar">: رصيد السابق</span>
+              </div>
+            </div>
+
+            <!-- Center Column: QR Code -->
+            <div class="zain-meta-col-center">
+              ${qrSvgHtml || '<div style="font-size:10px;color:#888;">ZATCA QR</div>'}
+            </div>
+
+            <!-- Right Column: Invoice Details -->
+            <div class="zain-meta-col-right">
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">Invoice No. :</span>
+                <span class="zain-field-val" style="color: #9e0e24; font-size:10.5px;">${inv.number}</span>
+                <span class="zain-field-lbl-ar">: رقم الفاتورة</span>
+              </div>
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">Invoice Date :</span>
+                <span class="zain-field-val">${inv.date} ${inv.time || '10:15:20'}</span>
+                <span class="zain-field-lbl-ar">: تاريخ الفاتورة</span>
+              </div>
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">C.R No. :</span>
+                <span class="zain-field-val">${custCr}</span>
+                <span class="zain-field-lbl-ar">: رقم السجل التجاري</span>
+              </div>
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">VAT No. :</span>
+                <span class="zain-field-val">${custTax}</span>
+                <span class="zain-field-lbl-ar">: الرقم الضريبي للعميل</span>
+              </div>
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">Building No. :</span>
+                <span class="zain-field-val">${custBuilding}</span>
+                <span class="zain-field-lbl-ar">: رقم المبنى</span>
+              </div>
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">Street Name :</span>
+                <span class="zain-field-val">${custStreet}</span>
+                <span class="zain-field-lbl-ar">: اسم الشارع</span>
+              </div>
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">Secondary No:</span>
+                <span class="zain-field-val">${custSecondary}</span>
+                <span class="zain-field-lbl-ar">: الرقم الإضافي</span>
+              </div>
+              <div class="zain-field-row">
+                <span class="zain-field-lbl-en">Area Name :</span>
+                <span class="zain-field-val">${custArea}</span>
+                <span class="zain-field-lbl-ar">: اسم المنطقة</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Items Table (11 Columns) -->
+        <table class="zain-table">
+          <thead>
+            <tr>
+              <th style="width: 22px;">م<br>Sl.No</th>
+              <th style="width: 48px;">رمز الصنف<br>SKU</th>
+              <th>اسم الصنف<br>Item Description</th>
+              <th style="width: 38px;">الكمية<br>Qty</th>
+              <th style="width: 36px;">الوحدة<br>Unit</th>
+              <th style="width: 46px;">سعر الوحدة<br>U. Price</th>
+              <th style="width: 46px;">العبوة<br>Packing</th>
+              <th style="width: 52px;">إجمالي الفاتورة<br>Total Price</th>
+              <th style="width: 30px;">الضريبة %<br>Tax%</th>
+              <th style="width: 44px;">الضريبة<br>Vat Amt.</th>
+              <th style="width: 54px;">الإجمالي<br>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+
+        <!-- 5. Bottom Footer Grid -->
+        <div class="zain-footer-grid">
+          <!-- Left Sub-Grid: Tafqeet, Banks, Signatures -->
+          <div class="zain-footer-left">
+            <!-- Tafqeet Banner -->
+            <div class="zain-tafqeet-strip">
+              <div><b>Only :</b> ${enTafqeet || 'Saudi Riyal ' + fmt(inv.grandTotal)} Only</div>
+              <div style="direction: rtl; margin-top: 1px;"><b>فقط ،</b> ${arTafqeet || ''} لاغير</div>
+            </div>
+
+            <!-- Bank Accounts Box -->
+            <div class="zain-bank-box">
+              <div class="zain-bank-row">
+                <span class="zain-bank-badge">${settings.bank1Name || 'SNB'}</span>
+                <span style="font-weight: 700;">${settings.bank1Account || 'شركة زين المتقدمة التجارية'}</span>
+                <span>A/C No: <b>${settings.bank1Iban || 'SA0510000011500000186902'}</b></span>
+              </div>
+              <div class="zain-bank-row">
+                <span class="zain-bank-badge" style="background:#0284c7;">${settings.bank2Name || 'Al Rajhi Bank'}</span>
+                <span style="font-weight: 700;">${settings.bank2Account || 'شركة زين المتقدمة التجارية'}</span>
+                <span>A/C No: <b>${settings.bank2Iban || 'SA0880000 471608010461457'}</b></span>
+              </div>
+            </div>
+
+            <!-- Signatures Row -->
+            <div class="zain-signatures-row">
+              <div>Received By<br>المستلم</div>
+              <div>Checked by<br>المراجع</div>
+              <div>Prepared By<br>اعدت بواسطة : <b>${inv.user || 'FARUK 18.15 qa'}</b></div>
+            </div>
+          </div>
+
+          <!-- Right Sub-Grid: Financial Summary -->
+          <div class="zain-financial-box">
+            <div class="zain-fin-row">
+              <div class="lbl-en-ar">
+                <span>Total (Excluding VAT)</span>
+                <span class="lbl-ar">الإجمالي قبل ضريبة القيمة المضافة</span>
+              </div>
+              <div class="val">${fmt(inv.subtotal)}</div>
+            </div>
+
+            <div class="zain-fin-row">
+              <div class="lbl-en-ar">
+                <span>Total Taxable Amount (Excluding VAT)</span>
+                <span class="lbl-ar">إجمالي المبلغ الخاضع للضريبة (باستثناء ض.ق.م)</span>
+              </div>
+              <div class="val">${fmt(inv.netTotal)}</div>
+            </div>
+
+            <div class="zain-fin-row">
+              <div class="lbl-en-ar">
+                <span>Total VAT Amount</span>
+                <span class="lbl-ar">المبلغ الإجمالي شامل ضريبة القيمة المضافة</span>
+              </div>
+              <div class="val">${fmt(inv.vatTotal)}</div>
+            </div>
+
+            <div class="zain-fin-row zain-fin-grand-total">
+              <div class="lbl-en-ar">
+                <span>Total Amount Due</span>
+                <span class="lbl-ar">إجمالي المبلغ المستحق</span>
+              </div>
+              <div class="val">${fmt(inv.grandTotal)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  // -------------------------------------------------------------------------
+  // 🔵 MAYAR MODERN BLUE ZATCA FORMAT
+  // -------------------------------------------------------------------------
+  renderMayarInvoiceTemplate: function(inv, pLang, settings, lbl, fmt, qrSvgHtml, logoHtml, qrCaptionText, tafqeetText) {
+    const printEl = document.getElementById('invoice-print-wrapper');
+    if (!printEl) return;
+
+    // Document title
+    let docTitle = (lbl && lbl.quotationTitle) ? lbl.quotationTitle : 'عرض سعر مبيعات';
+    if (inv.type === 'tax_invoice') {
+      docTitle = (lbl && lbl.taxInvoiceTitle) ? lbl.taxInvoiceTitle : 'فاتورة ضريبية';
+    }
+
+    const payMap = {
+      cash: (lbl.paymentCash || (pLang === 'en' ? 'Cash' : (pLang === 'bilingual' ? 'نقدي / Cash' : 'نقدي'))),
+      credit: (lbl.paymentCredit || (pLang === 'en' ? 'Credit / On Account' : (pLang === 'bilingual' ? 'آجل / Credit' : 'آجل'))),
+      bank: (lbl.paymentBank || (pLang === 'en' ? 'Bank Transfer' : (pLang === 'bilingual' ? 'تحويل بنكي / Bank Transfer' : 'تحويل بنكي'))),
+      card: (lbl.paymentCard || (pLang === 'en' ? 'Card / Mada' : (pLang === 'bilingual' ? 'شبكة (مدى) / Card' : 'شبكة (مدى)')))
+    };
+    const payMethodText = payMap[inv.paymentMethod || 'cash'] || payMap['cash'];
+    const payBadgeColor = (inv.paymentMethod === 'cash') ? '#059669' : '#0284c7';
+    const payBadgeBg = (inv.paymentMethod === 'cash') ? '#dcfce7' : '#e0f2fe';
+
     const rowsHtml = (inv.items || []).map((item, idx) => `
       <tr class="${idx % 2 === 1 ? 'inv-row-alt' : ''}">
-        <td style="width: 25px; text-align: center; font-weight: 700;">${item.sr}</td>
+        <td style="width: 25px; text-align: center; font-weight: 700;">${item.sr || (idx + 1)}</td>
         <td style="width: 50px; text-align: center; color: #475569; font-weight: 700;">${item.code || ''}</td>
         <td class="desc" style="color: #0f172a; font-weight: 700;">${item.description || ''}</td>
         <td style="width: 50px; text-align: center;">${item.unit || ''}</td>
@@ -982,40 +1338,6 @@ const App = {
         <td class="inv-total-vat-col" style="width: 65px; text-align: center; font-weight: 900;">${fmt(item.totalWithVat)}</td>
       </tr>
     `).join('');
-
-    // Document title
-    let docTitle = (L && L.quotationTitle) ? L.quotationTitle : 'عرض سعر مبيعات';
-    if (inv.type === 'tax_invoice') {
-      docTitle = (L && L.taxInvoiceTitle) ? L.taxInvoiceTitle : 'فاتورة ضريبية';
-    }
-
-    // Tafqeet
-    let tafqeetText = '';
-    try {
-      const arTaf = (typeof Tafqeet !== 'undefined' && Tafqeet.toArabicWords) ? Tafqeet.toArabicWords(inv.grandTotal) : '';
-      const enTaf = (typeof Tafqeet !== 'undefined' && Tafqeet.toEnglishWords) ? Tafqeet.toEnglishWords(inv.grandTotal, 'SAR', 'HALALAS') : '';
-      if (pLang === 'ar') {
-        tafqeetText = arTaf;
-      } else if (pLang === 'en') {
-        tafqeetText = enTaf;
-      } else {
-        tafqeetText = `<div>${arTaf}</div><div style="font-size: 10px; font-weight: 600; color: #0369a1; margin-top: 1px;">${enTaf}</div>`;
-      }
-    } catch (e) {
-      console.error('Tafqeet error:', e);
-      tafqeetText = '';
-    }
-
-    // Resolve payment method label
-    const payMap = {
-      cash: (lbl.paymentCash || (pLang === 'en' ? 'Cash' : (pLang === 'bilingual' ? 'نقدي / Cash' : 'نقدي'))),
-      credit: (lbl.paymentCredit || (pLang === 'en' ? 'Credit / On Account' : (pLang === 'bilingual' ? 'آجل / Credit' : 'آجل'))),
-      bank: (lbl.paymentBank || (pLang === 'en' ? 'Bank Transfer' : (pLang === 'bilingual' ? 'تحويل بنكي / Bank Transfer' : 'تحويل بنكي'))),
-      card: (lbl.paymentCard || (pLang === 'en' ? 'Card / Mada' : (pLang === 'bilingual' ? 'شبكة (مدى) / Card' : 'شبكة (مدى)')))
-    };
-    const payMethodText = payMap[inv.paymentMethod || 'cash'] || payMap['cash'];
-    const payBadgeColor = (inv.paymentMethod === 'cash') ? '#059669' : '#0284c7';
-    const payBadgeBg = (inv.paymentMethod === 'cash') ? '#dcfce7' : '#e0f2fe';
 
     printEl.innerHTML = `
       <!-- Top Decorative Corporate Color Bar -->
@@ -1769,24 +2091,39 @@ const App = {
     };
     setFld('setting-comp-ar', 'setting-name-ar', s.companyNameAr);
     setFld('setting-comp-en', 'setting-name-en', s.companyNameEn);
+    setFld('setting-activity-ar', 'setting-activity-ar', s.activityAr || 'خردوات والقرطاسية وأدوات التجميل بالجملة');
+    setFld('setting-activity-en', 'setting-activity-en', s.activityEn || 'Sundries, Stationary & Cosmetics Wholesale');
     setFld('setting-tax-number', 'setting-tax', s.taxNumber);
     setFld('setting-cr-number', 'setting-cr', s.crNumber);
     setFld('setting-branch', 'setting-branch', s.branch);
-    setFld('setting-phone', 'setting-phone', s.phone);
-    setFld('setting-address', 'setting-address', s.address);
+    setFld('setting-phone', 'setting-phone', s.phonesEn || s.phone);
+    setFld('setting-address', 'setting-address', s.addressEn || s.address);
+    setFld('setting-address-ar', 'setting-address-ar', s.addressAr || s.address);
+    setFld('setting-building-en', 'setting-building-en', s.buildingEn || '');
+    setFld('setting-building-ar', 'setting-building-ar', s.buildingAr || '');
+    setFld('setting-postal-en', 'setting-postal-en', s.postalEn || '');
+    setFld('setting-postal-ar', 'setting-postal-ar', s.postalAr || '');
+    setFld('setting-email', 'setting-email', s.email || 'wholesalezain@gmail.com');
+    setFld('setting-bank1-name', 'setting-bank1-name', s.bank1Name || 'SNB');
+    setFld('setting-bank1-acc', 'setting-bank1-acc', s.bank1Account || s.companyNameAr);
+    setFld('setting-bank1-iban', 'setting-bank1-iban', s.bank1Iban || '');
+    setFld('setting-bank2-name', 'setting-bank2-name', s.bank2Name || 'Al Rajhi Bank');
+    setFld('setting-bank2-acc', 'setting-bank2-acc', s.bank2Account || s.companyNameAr);
+    setFld('setting-bank2-iban', 'setting-bank2-iban', s.bank2Iban || '');
+    setFld('setting-template', 'setting-template', s.activeTemplate || 'zain');
     setFld('setting-cost-center', 'setting-cost-center', s.costCenter);
     setFld('setting-warehouse', 'setting-warehouse', s.warehouse);
     setFld('setting-sales-rep', 'setting-sales-rep', s.salesRep);
     setFld('setting-currency', 'setting-currency', s.currency);
     setFld('setting-vat', 'setting-vat', s.defaultVatRate || 15);
     setFld('setting-next-quotation', 'setting-next-quote', s.nextQuotationNumber || 64);
-    setFld('setting-next-invoice', 'setting-next-inv', s.nextInvoiceNumber || 3458);
+    setFld('setting-next-invoice', 'setting-next-inv', s.nextInvoiceNumber || 135745);
 
     const qrCheck = document.getElementById('setting-show-zatca-qr') || document.getElementById('setting-show-qr');
     if (qrCheck) qrCheck.checked = s.showZatcaQr !== false;
 
     const qrTypeEl = document.getElementById('setting-qr-type');
-    if (qrTypeEl) qrTypeEl.value = s.qrType || 'website';
+    if (qrTypeEl) qrTypeEl.value = s.qrType || 'zatca';
 
     const websiteEl = document.getElementById('setting-website-url');
     if (websiteEl) websiteEl.value = s.websiteUrl || 'https://www.mayarjeddah.com';
@@ -1801,14 +2138,14 @@ const App = {
       if (s.logoUrl === 'none') {
         preview.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="60" viewBox="0 0 120 60"><rect width="100%" height="100%" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%2394a3b8" font-size="12" font-family="sans-serif">No Logo</text></svg>';
       } else {
-        preview.src = s.logoUrl || 'assets/logo.svg';
+        preview.src = s.logoUrl || 'assets/zain_logo.svg';
       }
     }
   },
 
   resetLogoToDefault: function() {
     const preview = document.getElementById('setting-logo-preview');
-    if (preview) preview.src = 'assets/logo.svg';
+    if (preview) preview.src = 'assets/zain_logo.svg';
     const urlInput = document.getElementById('setting-logo-url');
     if (urlInput) urlInput.value = '';
     const fileInput = document.getElementById('setting-logo-file');
@@ -1848,11 +2185,29 @@ const App = {
       ...prev,
       companyNameAr: getFld('setting-comp-ar', 'setting-name-ar', prev.companyNameAr),
       companyNameEn: getFld('setting-comp-en', 'setting-name-en', prev.companyNameEn),
+      activityAr: getFld('setting-activity-ar', 'setting-activity-ar', prev.activityAr),
+      activityEn: getFld('setting-activity-en', 'setting-activity-en', prev.activityEn),
       taxNumber: getFld('setting-tax-number', 'setting-tax', prev.taxNumber),
       crNumber: getFld('setting-cr-number', 'setting-cr', prev.crNumber),
       branch: getFld('setting-branch', 'setting-branch', prev.branch),
       phone: getFld('setting-phone', 'setting-phone', prev.phone),
+      phonesEn: getFld('setting-phone', 'setting-phone', prev.phonesEn || prev.phone),
+      phonesAr: getFld('setting-phone', 'setting-phone', prev.phonesAr || prev.phone),
       address: getFld('setting-address', 'setting-address', prev.address),
+      addressEn: getFld('setting-address', 'setting-address', prev.addressEn || prev.address),
+      addressAr: getFld('setting-address-ar', 'setting-address-ar', prev.addressAr || prev.address),
+      buildingEn: getFld('setting-building-en', 'setting-building-en', prev.buildingEn),
+      buildingAr: getFld('setting-building-ar', 'setting-building-ar', prev.buildingAr),
+      postalEn: getFld('setting-postal-en', 'setting-postal-en', prev.postalEn),
+      postalAr: getFld('setting-postal-ar', 'setting-postal-ar', prev.postalAr),
+      email: getFld('setting-email', 'setting-email', prev.email || 'wholesalezain@gmail.com'),
+      bank1Name: getFld('setting-bank1-name', 'setting-bank1-name', prev.bank1Name || 'SNB'),
+      bank1Account: getFld('setting-bank1-acc', 'setting-bank1-acc', prev.bank1Account),
+      bank1Iban: getFld('setting-bank1-iban', 'setting-bank1-iban', prev.bank1Iban),
+      bank2Name: getFld('setting-bank2-name', 'setting-bank2-name', prev.bank2Name || 'Al Rajhi Bank'),
+      bank2Account: getFld('setting-bank2-acc', 'setting-bank2-acc', prev.bank2Account),
+      bank2Iban: getFld('setting-bank2-iban', 'setting-bank2-iban', prev.bank2Iban),
+      activeTemplate: getFld('setting-template', 'setting-template', prev.activeTemplate || 'zain'),
       costCenter: getFld('setting-cost-center', 'setting-cost-center', prev.costCenter),
       warehouse: getFld('setting-warehouse', 'setting-warehouse', prev.warehouse),
       salesRep: getFld('setting-sales-rep', 'setting-sales-rep', prev.salesRep),
@@ -1864,12 +2219,13 @@ const App = {
       nextQuotationNumber: parseInt(getFld('setting-next-quotation', 'setting-next-quote', '1')) || 1,
       nextInvoiceNumber: parseInt(getFld('setting-next-invoice', 'setting-next-inv', '1')) || 1,
       showZatcaQr: (document.getElementById('setting-show-zatca-qr') || document.getElementById('setting-show-qr'))?.checked !== false,
-      qrType: document.getElementById('setting-qr-type')?.value || 'website',
+      qrType: document.getElementById('setting-qr-type')?.value || 'zatca',
       websiteUrl: (document.getElementById('setting-website-url')?.value || 'https://www.mayarjeddah.com').trim(),
       logoUrl: (logoInputVal !== undefined && logoInputVal !== '') ? logoInputVal : ''
     };
 
     DB.saveSettings(s);
+    this.currentPrintTemplate = s.activeTemplate;
     const msg = (typeof I18N !== 'undefined') ? I18N.t('msgSettingsSaved') : 'Settings saved successfully!';
     alert(msg);
   },

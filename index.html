@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon" href="assets/icon-192.png">
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/styles.css?v=2.7">
+  <link rel="stylesheet" href="css/styles.css?v=3.0">
 </head>
 <body>
 
@@ -459,19 +459,83 @@
         </div>
 
         <div class="form-grid">
+          <!-- Template Selection -->
+          <div class="form-group" style="grid-column: 1 / -1; background: #fff1f2; padding: 12px; border-radius: 6px; border: 1.5px solid #fecdd3;">
+            <label style="font-weight: 800; font-size: 13.5px; color: #9e0e24;">🎨 Default Invoice Design Template (شكل الفاتورة الافتراضي)</label>
+            <select class="form-control" id="setting-template" style="font-weight: 700; color: #9e0e24; border-color: #f87171;">
+              <option value="zain" selected>🔴 Zain Red Continuous Dot-Matrix Format (فاتورة زين الحمراء - طبق الأصل)</option>
+              <option value="mayar">🔵 Mayar Blue Modern ZATCA Format (فاتورة معيار الزرقاء)</option>
+            </select>
+          </div>
+
           <div class="form-group">
             <label data-i18n="lblCompNameEn">Company Name (English)</label>
-            <input type="text" class="form-control" id="setting-comp-en" value="Mayar Jeddah Trading Company">
+            <input type="text" class="form-control" id="setting-comp-en" value="ZAIN ADVANCED TRADING COMPANY">
           </div>
 
           <div class="form-group">
             <label data-i18n="lblCompNameAr">Company Name (Arabic)</label>
-            <input type="text" class="form-control" id="setting-comp-ar" value="شركة معيار جدة للتجارة للمواد الغذائية">
+            <input type="text" class="form-control" id="setting-comp-ar" value="شركة زين المتقدمة التجارية بالجملة">
+          </div>
+
+          <div class="form-group">
+            <label>Business Activity (English)</label>
+            <input type="text" class="form-control" id="setting-activity-en" value="Sundries, Stationary & Cosmetics Wholesale">
+          </div>
+
+          <div class="form-group">
+            <label>النشاط التجاري (عربي)</label>
+            <input type="text" class="form-control" id="setting-activity-ar" value="خردوات والقرطاسية وأدوات التجميل بالجملة">
           </div>
 
           <div class="form-group">
             <label data-i18n="lblCompTax">VAT Registration Number (15 Digits)</label>
-            <input type="text" class="form-control" id="setting-tax-number" value="311193748100003">
+            <input type="text" class="form-control" id="setting-tax-number" value="311186943400003">
+          </div>
+
+          <div class="form-group">
+            <label data-i18n="lblCompCr">Commercial Registration (CR No.)</label>
+            <input type="text" class="form-control" id="setting-cr-number" value="4030294347">
+          </div>
+
+          <div class="form-group">
+            <label>Phones / Contact Numbers (English)</label>
+            <input type="text" class="form-control" id="setting-phone" value="012 608 6220 / 055 886 3822 / 050 587 8700">
+          </div>
+
+          <div class="form-group">
+            <label>Company Email (البريد الإلكتروني)</label>
+            <input type="email" class="form-control" id="setting-email" value="wholesalezain@gmail.com">
+          </div>
+
+          <div class="form-group">
+            <label>Physical Address (English)</label>
+            <input type="text" class="form-control" id="setting-address" value="Jeddah - Mahjar - Dawar Nojoom - Nujoom Center">
+          </div>
+
+          <div class="form-group">
+            <label>العنوان (عربي)</label>
+            <input type="text" class="form-control" id="setting-address-ar" value="جدة - المحجر - دوار النجوم - مركز النجوم">
+          </div>
+
+          <div class="form-group">
+            <label>Building & Secondary No. (English)</label>
+            <input type="text" class="form-control" id="setting-building-en" value="Mahjar - Building No. 8205 - Secondary No. 3731">
+          </div>
+
+          <div class="form-group">
+            <label>المبنى والرقم الإضافي (عربي)</label>
+            <input type="text" class="form-control" id="setting-building-ar" value="حي المحجر - رقم المبنى ٨٢٠٥ - رقم إضافي ٣٧٣١">
+          </div>
+
+          <div class="form-group">
+            <label>Postal Code (English)</label>
+            <input type="text" class="form-control" id="setting-postal-en" value="Postal Code 22421 - Jeddah - K.S.A">
+          </div>
+
+          <div class="form-group">
+            <label>الرمز البريدي (عربي)</label>
+            <input type="text" class="form-control" id="setting-postal-ar" value="رمز بريدي ٢٢٤٢١ - جدة - المملكة العربية السعودية">
           </div>
 
           <div class="form-group">
@@ -480,28 +544,46 @@
           </div>
 
           <div class="form-group">
-            <label data-i18n="lblCompCr">Commercial Registration (CR No.)</label>
-            <input type="text" class="form-control" id="setting-cr-number" value="4030384192">
-          </div>
-
-          <div class="form-group">
-            <label data-i18n="lblCompPhone">Phone / Landline</label>
-            <input type="text" class="form-control" id="setting-phone" value="+966-12-0000000">
-          </div>
-
-          <div class="form-group" style="grid-column: 1 / -1;">
-            <label data-i18n="lblCompAddress">Physical Address</label>
-            <input type="text" class="form-control" id="setting-address" value="جدة - حي المحجر - المملكة العربية السعودية">
-          </div>
-
-          <div class="form-group">
             <label data-i18n="lblNextInvNo">Next Invoice Number</label>
-            <input type="number" class="form-control" id="setting-next-invoice" value="64">
+            <input type="number" class="form-control" id="setting-next-invoice" value="135745">
           </div>
 
           <div class="form-group">
             <label data-i18n="lblNextQuoteNo">Next Quotation Number</label>
             <input type="number" class="form-control" id="setting-next-quotation" value="64">
+          </div>
+
+          <!-- Bank Accounts Configuration -->
+          <div class="form-group" style="grid-column: 1 / -1; background: #f0fdf4; padding: 14px; border-radius: 6px; border: 1.5px solid #bbf7d0;">
+            <label style="font-weight: 800; font-size: 13.5px; color: #166534; margin-bottom: 8px; display: block;">
+              🏦 Bank Accounts for Invoices (الحسابات البنكية المطبوعة أسفل الفاتورة)
+            </label>
+            <div class="form-grid" style="gap: 10px;">
+              <div class="form-group">
+                <label>Bank 1 Name (البنك الأول)</label>
+                <input type="text" class="form-control" id="setting-bank1-name" value="SNB">
+              </div>
+              <div class="form-group">
+                <label>Bank 1 Account Name (اسم الحساب)</label>
+                <input type="text" class="form-control" id="setting-bank1-acc" value="شركة زين المتقدمة التجارية">
+              </div>
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Bank 1 IBAN (رقم الآيبان الأول)</label>
+                <input type="text" class="form-control" id="setting-bank1-iban" value="SA0510000011500000186902">
+              </div>
+              <div class="form-group">
+                <label>Bank 2 Name (البنك الثاني)</label>
+                <input type="text" class="form-control" id="setting-bank2-name" value="Al Rajhi Bank">
+              </div>
+              <div class="form-group">
+                <label>Bank 2 Account Name (اسم الحساب)</label>
+                <input type="text" class="form-control" id="setting-bank2-acc" value="شركة زين المتقدمة التجارية">
+              </div>
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Bank 2 IBAN (رقم الآيبان الثاني)</label>
+                <input type="text" class="form-control" id="setting-bank2-iban" value="SA0880000 471608010461457">
+              </div>
+            </div>
           </div>
 
           <!-- Middle Header Logo Panel -->
@@ -764,18 +846,34 @@
       </div>
       <div class="modal-body" style="background: #e2e8f0; padding: 14px; overflow: auto; -webkit-overflow-scrolling: touch; text-align: center;">
         <!-- Print Format Selector Bar -->
-        <div class="print-toolbar">
-          <div style="font-weight: 700; font-size: 13px;" data-i18n="lblPrintFormat">Invoice Print Format:</div>
-          <div class="print-format-group">
-            <button type="button" class="btn-print-lang active" data-plang="bilingual" data-i18n="optPrintBilingual" onclick="App.setPrintLanguage('bilingual')">
-              🌐 Bilingual (English + Arabic ZATCA)
-            </button>
-            <button type="button" class="btn-print-lang" data-plang="ar" data-i18n="optPrintArabic" onclick="App.setPrintLanguage('ar')">
-              🇸🇦 Arabic Only (1:1 سلنو)
-            </button>
-            <button type="button" class="btn-print-lang" data-plang="en" data-i18n="optPrintEnglish" onclick="App.setPrintLanguage('en')">
-              🇬🇧 English Only
-            </button>
+        <div class="print-toolbar" style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+          <!-- Template Chooser -->
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center;">
+            <div style="font-weight: 800; font-size: 13px;">🎨 Invoice Design / شكل الفاتورة:</div>
+            <div class="print-format-group">
+              <button type="button" class="btn-print-tpl active" data-ptpl="zain" onclick="App.setPrintTemplate('zain')">
+                🔴 Zain Red Format (فاتورة زين الحمراء)
+              </button>
+              <button type="button" class="btn-print-tpl" data-ptpl="mayar" onclick="App.setPrintTemplate('mayar')">
+                🔵 Mayar Blue Format (فاتورة معيار الزرقاء)
+              </button>
+            </div>
+          </div>
+
+          <!-- Language Chooser -->
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center;">
+            <div style="font-weight: 700; font-size: 13px;" data-i18n="lblPrintFormat">Language / اللغة:</div>
+            <div class="print-format-group">
+              <button type="button" class="btn-print-lang active" data-plang="bilingual" data-i18n="optPrintBilingual" onclick="App.setPrintLanguage('bilingual')">
+                🌐 Bilingual (English + Arabic ZATCA)
+              </button>
+              <button type="button" class="btn-print-lang" data-plang="ar" data-i18n="optPrintArabic" onclick="App.setPrintLanguage('ar')">
+                🇸🇦 Arabic Only
+              </button>
+              <button type="button" class="btn-print-lang" data-plang="en" data-i18n="optPrintEnglish" onclick="App.setPrintLanguage('en')">
+                🇬🇧 English Only
+              </button>
+            </div>
           </div>
         </div>
 
@@ -790,13 +888,13 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/tafqeet.js?v=2.7"></script>
-  <script src="js/hijri.js?v=2.7"></script>
-  <script src="js/zatca.js?v=2.7"></script>
-  <script src="js/qrcode.js?v=2.7"></script>
-  <script src="js/html2pdf.bundle.min.js?v=2.7"></script>
-  <script src="js/i18n.js?v=2.7"></script>
-  <script src="js/db.js?v=2.7"></script>
-  <script src="js/app.js?v=2.7"></script>
+  <script src="js/tafqeet.js?v=3.0"></script>
+  <script src="js/hijri.js?v=3.0"></script>
+  <script src="js/zatca.js?v=3.0"></script>
+  <script src="js/qrcode.js?v=3.0"></script>
+  <script src="js/html2pdf.bundle.min.js?v=3.0"></script>
+  <script src="js/i18n.js?v=3.0"></script>
+  <script src="js/db.js?v=3.0"></script>
+  <script src="js/app.js?v=3.0"></script>
 </body>
 </html>
