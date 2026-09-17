@@ -1258,7 +1258,7 @@ const App = {
             <div class="zain-signatures-row">
               <div>Received By<br>المستلم</div>
               <div>Checked by<br>المراجع</div>
-              <div>Prepared By<br>اعدت بواسطة : <b>${inv.user || 'FARUK 18.15 qa'}</b></div>
+              <div>Prepared By<br>اعدت بواسطة : <b>${inv.user || settings.preparedBy || settings.salesRep || 'المدير'}</b></div>
             </div>
           </div>
 
@@ -2096,6 +2096,7 @@ const App = {
     setFld('setting-tax-number', 'setting-tax', s.taxNumber);
     setFld('setting-cr-number', 'setting-cr', s.crNumber);
     setFld('setting-branch', 'setting-branch', s.branch);
+    setFld('setting-prepared-by', 'setting-prepared-by', s.preparedBy || s.salesRep || 'المدير');
     setFld('setting-phone', 'setting-phone', s.phonesEn || s.phone);
     setFld('setting-address', 'setting-address', s.addressEn || s.address);
     setFld('setting-address-ar', 'setting-address-ar', s.addressAr || s.address);
@@ -2190,6 +2191,7 @@ const App = {
       taxNumber: getFld('setting-tax-number', 'setting-tax', prev.taxNumber),
       crNumber: getFld('setting-cr-number', 'setting-cr', prev.crNumber),
       branch: getFld('setting-branch', 'setting-branch', prev.branch),
+      preparedBy: getFld('setting-prepared-by', 'setting-prepared-by', prev.preparedBy || 'المدير'),
       phone: getFld('setting-phone', 'setting-phone', prev.phone),
       phonesEn: getFld('setting-phone', 'setting-phone', prev.phonesEn || prev.phone),
       phonesAr: getFld('setting-phone', 'setting-phone', prev.phonesAr || prev.phone),
