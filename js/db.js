@@ -44,7 +44,7 @@ const DB = {
       exchangeRate: 1,
       defaultVatRate: 15,
       nextQuotationNumber: 64,
-      nextInvoiceNumber: 135745,
+      nextInvoiceNumber: 135746,
       showZatcaQr: true,
       qrType: 'zatca',
       websiteUrl: 'https://www.mayarjeddah.com',
@@ -275,23 +275,62 @@ const DB = {
       exchangeRate: 1,
       defaultVatRate: 15,
       nextQuotationNumber: 64,
-      nextInvoiceNumber: 135745,
+      nextInvoiceNumber: 135746,
       showZatcaQr: true,
       qrType: 'zatca',
       websiteUrl: 'https://www.mayarjeddah.com',
       logoUrl: 'assets/zain_logo.svg',
       notes: '',
-      bank1Name: 'SNB',
-      bank1Account: 'شركة زين المتقدمة التجارية',
-      bank1Iban: 'SA0510000011500000186902',
-      bank2Name: 'Al Rajhi Bank',
-      bank2Account: 'شركة زين المتقدمة التجارية',
-      bank2Iban: 'SA0880000 471608010461457',
       activeTemplate: 'zain'
     }, parsed);
   },
   saveSettings: function(settings) {
     localStorage.setItem(this.KEYS.SETTINGS, JSON.stringify(settings));
+  },
+
+  getNextInvoiceNumber: function(type = 'simplified_tax_invoice') {
+    const settings = this.getSettings();
+    const invoices = this.getInvoices();
+    if (type === 'quotation') {
+      let maxNum = parseInt(settings.nextQuotationNumber, 10) || 64;
+      invoices.forEach(inv => {
+        if (inv.type === 'quotation') {
+          const n = parseInt(inv.number, 10);
+          if (!isNaN(n) && n >= maxNum) {
+            maxNum = n + 1;
+          }
+        }
+      });
+      return maxNum;
+    } else {
+      let maxNum = parseInt(settings.nextInvoiceNumber, 10) || 135746;
+      invoices.forEach(inv => {
+        if (inv.type !== 'quotation') {
+          const n = parseInt(inv.number, 10);
+          if (!isNaN(n) && n >= maxNum) {
+            maxNum = n + 1;
+          }
+        }
+      });
+      return maxNum;
+    }
+  },
+
+  incrementNextNumber: function(type, currentNumber) {
+    const settings = this.getSettings();
+    const numInt = parseInt(currentNumber, 10);
+    if (!isNaN(numInt)) {
+      if (type === 'quotation') {
+        if (numInt >= (parseInt(settings.nextQuotationNumber, 10) || 1)) {
+          settings.nextQuotationNumber = numInt + 1;
+        }
+      } else {
+        if (numInt >= (parseInt(settings.nextInvoiceNumber, 10) || 1)) {
+          settings.nextInvoiceNumber = numInt + 1;
+        }
+      }
+      this.saveSettings(settings);
+    }
   },
 
   // Products

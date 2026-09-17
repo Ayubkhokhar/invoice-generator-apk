@@ -122,7 +122,7 @@ const App = {
     if (existingInvoice) {
       this.currentInvoice = JSON.parse(JSON.stringify(existingInvoice));
     } else {
-      const nextNum = String(settings.nextInvoiceNumber || 1).padStart(6, '0');
+      const nextNum = String(DB.getNextInvoiceNumber('simplified_tax_invoice')).padStart(6, '0');
       this.currentInvoice = {
         id: null,
         type: 'simplified_tax_invoice',
@@ -263,11 +263,8 @@ const App = {
       this.currentInvoice.typeNameEn = 'Simplified Tax Invoice';
     }
     
-    const settings = DB.getSettings();
     if (!this.currentInvoice.id) {
-      const nextNum = docType === 'quotation' 
-        ? String(settings.nextQuotationNumber || 1).padStart(6, '0')
-        : String(settings.nextInvoiceNumber || 1).padStart(6, '0');
+      const nextNum = String(DB.getNextInvoiceNumber(docType)).padStart(6, '0');
       this.currentInvoice.number = nextNum;
       const numEl = document.getElementById('inv-number');
       if (numEl) numEl.value = nextNum;
@@ -733,17 +730,8 @@ const App = {
     const saved = DB.saveInvoice(inv);
     this.currentInvoice = saved;
 
-    // Increment next invoice number in settings
-    const settings = DB.getSettings();
-    const currNumInt = parseInt(inv.number, 10);
-    if (!isNaN(currNumInt)) {
-      if (inv.type === 'quotation' && currNumInt >= (settings.nextQuotationNumber || 1)) {
-        settings.nextQuotationNumber = currNumInt + 1;
-      } else if (inv.type === 'tax_invoice' && currNumInt >= (settings.nextInvoiceNumber || 1)) {
-        settings.nextInvoiceNumber = currNumInt + 1;
-      }
-      DB.saveSettings(settings);
-    }
+    // Increment next invoice / quotation number in settings
+    DB.incrementNextNumber(inv.type, inv.number);
 
     const msg = (typeof I18N !== 'undefined') ? I18N.t('msgInvoiceSaved') : 'Invoice saved successfully!';
     alert(msg);
@@ -1748,8 +1736,7 @@ const App = {
     if (inv) {
       const copy = JSON.parse(JSON.stringify(inv));
       copy.id = null;
-      const settings = DB.getSettings();
-      copy.number = String(settings.nextQuotationNumber || 1).padStart(6, '0');
+      copy.number = String(DB.getNextInvoiceNumber(copy.type)).padStart(6, '0');
       copy.date = new Date().toISOString().split('T')[0];
       copy.time = new Date().toTimeString().split(' ')[0];
       copy.hijriDate = HijriConverter.toHijri(copy.date, -1);
@@ -2234,7 +2221,7 @@ const App = {
     setFld('setting-currency', 'setting-currency', s.currency);
     setFld('setting-vat', 'setting-vat', s.defaultVatRate || 15);
     setFld('setting-next-quotation', 'setting-next-quote', s.nextQuotationNumber || 64);
-    setFld('setting-next-invoice', 'setting-next-inv', s.nextInvoiceNumber || 135745);
+    setFld('setting-next-invoice', 'setting-next-inv', s.nextInvoiceNumber || 135746);
 
     const qrCheck = document.getElementById('setting-show-zatca-qr') || document.getElementById('setting-show-qr');
     if (qrCheck) qrCheck.checked = s.showZatcaQr !== false;
