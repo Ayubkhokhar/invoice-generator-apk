@@ -835,7 +835,18 @@ const App = {
             format: 'a4'
           });
           const imgData = canvas.toDataURL('image/jpeg', 0.98);
-          doc.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+          const pdfW = 210;
+          const pdfH = 297;
+          const marginX = 7.5;
+          const marginY = 8;
+          const targetW = pdfW - (marginX * 2);
+          const targetH = (canvas.height / canvas.width) * targetW;
+          const maxH = pdfH - (marginY * 2);
+          const finalW = (targetH > maxH) ? (targetW * (maxH / targetH)) : targetW;
+          const finalH = (targetH > maxH) ? maxH : targetH;
+          const posX = (pdfW - finalW) / 2;
+          const posY = marginY;
+          doc.addImage(imgData, 'JPEG', posX, posY, finalW, finalH, undefined, 'FAST');
 
           if (dlBtn) dlBtn.innerHTML = origText;
 
@@ -854,8 +865,8 @@ const App = {
     };
 
     const renderViaSvgForeignObject = async () => {
-      const width = printEl.offsetWidth || 794;
-      const height = printEl.offsetHeight || 1123;
+      const width = printEl.offsetWidth || 737;
+      const height = printEl.offsetHeight || 1040;
 
       let styles = '';
       for (let i = 0; i < document.styleSheets.length; i++) {
@@ -941,7 +952,7 @@ const App = {
         console.warn('SVG foreignObject render failed, using html2pdf fallback:', err);
         if (typeof html2pdf !== 'undefined') {
           const opt = {
-            margin: [0, 0, 0, 0],
+            margin: [8, 7.5, 8, 7.5],
             filename: filename,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: {
@@ -950,7 +961,7 @@ const App = {
               logging: false,
               scrollY: 0,
               letterRendering: false,
-              windowWidth: 794
+              windowWidth: 737
             },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
           };
@@ -1177,6 +1188,29 @@ const App = {
       </tr>
     `).join('');
 
+    const minRows = 10;
+    const itemsCount = (inv.items || []).length;
+    let fillerRowsHtml = '';
+    if (itemsCount < minRows) {
+      for (let i = itemsCount; i < minRows; i++) {
+        fillerRowsHtml += `
+          <tr class="zain-filler-row">
+            <td style="width: 22px;">&nbsp;</td>
+            <td style="width: 48px;">&nbsp;</td>
+            <td class="desc-cell">&nbsp;</td>
+            <td style="width: 38px;">&nbsp;</td>
+            <td style="width: 36px;">&nbsp;</td>
+            <td style="width: 46px;">&nbsp;</td>
+            <td style="width: 46px;">&nbsp;</td>
+            <td style="width: 52px;">&nbsp;</td>
+            <td style="width: 30px;">&nbsp;</td>
+            <td style="width: 44px;">&nbsp;</td>
+            <td style="width: 54px;">&nbsp;</td>
+          </tr>
+        `;
+      }
+    }
+
     printEl.innerHTML = `
       <div class="zain-inv-container">
         <!-- 1. Red Header Box -->
@@ -1324,27 +1358,30 @@ const App = {
           </div>
         </div>
 
-        <!-- 4. Items Table (11 Columns) -->
-        <table class="zain-table">
-          <thead>
-            <tr>
-              <th style="width: 22px;"><span dir="rtl">م</span><br>Sl.No</th>
-              <th style="width: 48px;"><span dir="rtl">رمز الصنف</span><br>SKU</th>
-              <th><span dir="rtl">اسم الصنف</span><br>Item Description</th>
-              <th style="width: 38px;"><span dir="rtl">الكمية</span><br>Qty</th>
-              <th style="width: 36px;"><span dir="rtl">الوحدة</span><br>Unit</th>
-              <th style="width: 46px;"><span dir="rtl">سعر الوحدة</span><br>U. Price</th>
-              <th style="width: 46px;"><span dir="rtl">العبوة</span><br>Packing</th>
-              <th style="width: 52px;"><span dir="rtl">إجمالي الفاتورة</span><br>Total Price</th>
-              <th style="width: 30px;"><span dir="rtl">الضريبة %</span><br>Tax%</th>
-              <th style="width: 44px;"><span dir="rtl">الضريبة</span><br>Vat Amt.</th>
-              <th style="width: 54px;"><span dir="rtl">الإجمالي</span><br>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rowsHtml}
-          </tbody>
-        </table>
+        <!-- 4. Items Table (11 Columns) with Vertical Expansion -->
+        <div class="zain-table-container">
+          <table class="zain-table">
+            <thead>
+              <tr>
+                <th style="width: 22px;"><span dir="rtl">م</span><br>Sl.No</th>
+                <th style="width: 48px;"><span dir="rtl">رمز الصنف</span><br>SKU</th>
+                <th><span dir="rtl">اسم الصنـــــــــــــف</span><br>Item Description</th>
+                <th style="width: 38px;"><span dir="rtl">الكمية</span><br>Qty</th>
+                <th style="width: 36px;"><span dir="rtl">الوحدة</span><br>Unit</th>
+                <th style="width: 46px;"><span dir="rtl">سعر الوحدة</span><br>U. Price</th>
+                <th style="width: 46px;"><span dir="rtl">العبوة</span><br>Packing</th>
+                <th style="width: 52px;"><span dir="rtl">إجمالي الفاتورة</span><br>Total Price</th>
+                <th style="width: 30px;"><span dir="rtl">الضريبة %</span><br>Tax%</th>
+                <th style="width: 44px;"><span dir="rtl">الضريبة</span><br>Vat Amt.</th>
+                <th style="width: 54px;"><span dir="rtl">الإجمالي</span><br>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+              ${fillerRowsHtml}
+            </tbody>
+          </table>
+        </div>
 
         <!-- 5. Bottom Footer Grid -->
         <div class="zain-footer-grid">

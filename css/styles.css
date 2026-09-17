@@ -683,11 +683,11 @@ textarea.form-control {
    -------------------------------------------------------------------------- */
 #invoice-print-wrapper {
   background: #ffffff;
-  width: 210mm;
-  min-height: auto;
-  max-width: 210mm;
+  width: 195mm;
+  max-width: 195mm;
+  min-height: 275mm;
   margin: 0 auto;
-  padding: 5mm 8mm 4mm;
+  padding: 4mm 5mm 4mm;
   color: #0f172a;
   box-sizing: border-box;
   font-family: 'Arial', 'Cairo', sans-serif;
@@ -696,7 +696,7 @@ textarea.form-control {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-between;
   overflow: hidden;
 }
 
@@ -1120,12 +1120,17 @@ textarea.form-control {
    ========================================================================== */
 .zain-inv-container {
   width: 100%;
+  height: 100%;
+  min-height: 267mm;
   color: #111827;
   font-family: 'Arial', 'Cairo', sans-serif;
   font-size: 9.5px;
   line-height: 1.25;
   box-sizing: border-box;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 /* Red Top Header Box */
@@ -1342,13 +1347,22 @@ textarea.form-control {
 }
 
 /* Items Table */
+.zain-table-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 115mm;
+  margin-bottom: 3px;
+  position: relative;
+}
+
 .zain-table {
   width: 100%;
   border-collapse: collapse;
   border: 1px solid #111827;
-  margin-bottom: 2px;
   font-size: 9px;
   position: relative;
+  height: 100%;
 }
 
 .zain-table th {
@@ -1356,7 +1370,7 @@ textarea.form-control {
   color: #ffffff;
   font-weight: 800;
   text-align: center;
-  padding: 2.5px 2px;
+  padding: 3px 2px;
   border: 1px solid #111827;
   line-height: 1.15;
   font-size: 8.5px;
@@ -1364,18 +1378,28 @@ textarea.form-control {
 
 .zain-table td {
   border: 1px solid #111827;
-  padding: 2.5px 3px;
+  padding: 3px 3px;
   font-size: 8.8px;
   line-height: 1.2;
 }
 
-.zain-table tr:nth-child(even) {
+.zain-table tr:nth-child(even):not(.zain-filler-row) {
   background: #fdfdfd;
 }
 
 .zain-table td.desc-cell {
   text-align: left;
   font-weight: 700;
+}
+
+.zain-filler-row td {
+  height: 22px;
+  border-right: 1px solid #111827;
+  border-left: 1px solid #111827;
+  border-top: none;
+  border-bottom: none;
+  padding: 0 3px;
+  background: transparent;
 }
 
 .zain-table-watermark {
@@ -1520,28 +1544,55 @@ textarea.form-control {
     padding: 0;
   }
 
-  .app-header, .nav-tabs-wrapper, .main-container, .modal-overlay, .no-print {
+  .app-header, .nav-tabs-wrapper, .main-container, .modal-header, .modal-footer, .print-controls-bar, .no-print {
     display: none !important;
+  }
+
+  .modal-overlay {
+    position: static !important;
+    display: block !important;
+    background: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .modal-container {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: transparent !important;
+  }
+
+  .invoice-print-stage {
+    box-shadow: none !important;
+    display: block !important;
+    width: 100% !important;
   }
 
   #invoice-print-wrapper {
     display: flex !important;
     flex-direction: column !important;
-    padding: 4mm 6mm 4mm;
-    margin: 0 auto;
-    width: 100%;
-    height: auto;
-    max-height: 275mm;
-    border: none;
-    box-shadow: none;
-    overflow: hidden;
+    justify-content: space-between !important;
+    padding: 2mm 3mm 2mm !important;
+    margin: 0 auto !important;
+    width: 195mm !important;
+    max-width: 195mm !important;
+    min-height: 275mm !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
   }
 
   @page {
     size: A4 portrait;
-    margin: 0;
+    margin: 5mm 6mm;
   }
 }
 
