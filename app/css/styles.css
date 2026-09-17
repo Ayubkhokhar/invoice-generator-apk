@@ -1400,12 +1400,13 @@ textarea.form-control {
 .zain-footer-left {
   display: flex;
   flex-direction: column;
-  gap: 2.5px;
+  justify-content: space-between;
+  gap: 3px;
 }
 
 .zain-tafqeet-strip {
   border: 1px solid #111827;
-  padding: 2.5px 5px;
+  padding: 3px 5px;
   font-size: 8.8px;
   font-weight: 800;
   color: #111827;
@@ -1449,11 +1450,13 @@ textarea.form-control {
   display: grid;
   grid-template-columns: 1fr 1fr 1.2fr;
   border: 1px solid #111827;
-  padding: 3px 5px;
-  font-size: 8px;
+  padding: 4px 5px;
+  font-size: 8.5px;
   font-weight: 700;
   text-align: center;
   background: #ffffff;
+  min-height: 32px;
+  align-items: center;
 }
 
 /* Financial Totals Box (Right) */

@@ -559,38 +559,7 @@
             <input type="number" class="form-control" id="setting-next-quotation" value="64">
           </div>
 
-          <!-- Bank Accounts Configuration -->
-          <div class="form-group" style="grid-column: 1 / -1; background: #f0fdf4; padding: 14px; border-radius: 6px; border: 1.5px solid #bbf7d0;">
-            <label style="font-weight: 800; font-size: 13.5px; color: #166534; margin-bottom: 8px; display: block;">
-              🏦 Bank Accounts for Invoices (الحسابات البنكية المطبوعة أسفل الفاتورة)
-            </label>
-            <div class="form-grid" style="gap: 10px;">
-              <div class="form-group">
-                <label>Bank 1 Name (البنك الأول)</label>
-                <input type="text" class="form-control" id="setting-bank1-name" value="SNB">
-              </div>
-              <div class="form-group">
-                <label>Bank 1 Account Name (اسم الحساب)</label>
-                <input type="text" class="form-control" id="setting-bank1-acc" value="شركة زين المتقدمة التجارية">
-              </div>
-              <div class="form-group" style="grid-column: 1 / -1;">
-                <label>Bank 1 IBAN (رقم الآيبان الأول)</label>
-                <input type="text" class="form-control" id="setting-bank1-iban" value="SA0510000011500000186902">
-              </div>
-              <div class="form-group">
-                <label>Bank 2 Name (البنك الثاني)</label>
-                <input type="text" class="form-control" id="setting-bank2-name" value="Al Rajhi Bank">
-              </div>
-              <div class="form-group">
-                <label>Bank 2 Account Name (اسم الحساب)</label>
-                <input type="text" class="form-control" id="setting-bank2-acc" value="شركة زين المتقدمة التجارية">
-              </div>
-              <div class="form-group" style="grid-column: 1 / -1;">
-                <label>Bank 2 IBAN (رقم الآيبان الثاني)</label>
-                <input type="text" class="form-control" id="setting-bank2-iban" value="SA0880000 471608010461457">
-              </div>
-            </div>
-          </div>
+
 
           <!-- Middle Header Logo Panel -->
           <div class="form-group" style="grid-column: 1 / -1; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1.5px solid #e2e8f0;">
@@ -6204,20 +6173,6 @@ const App = {
             <div class="zain-tafqeet-strip">
               <div><b>Only :</b> ${enTafqeet || 'Saudi Riyal ' + fmt(inv.grandTotal)} Only</div>
               <div dir="rtl" style="margin-top: 1px;"><b>فقط ،</b> ${arTafqeet || ''} لاغير</div>
-            </div>
-
-            <!-- Bank Accounts Box -->
-            <div class="zain-bank-box">
-              <div class="zain-bank-row">
-                <span class="zain-bank-badge">${settings.bank1Name || 'SNB'}</span>
-                <span dir="rtl" style="font-weight: 700;">${settings.bank1Account || 'شركة زين المتقدمة التجارية'}</span>
-                <span>A/C No: <b>${settings.bank1Iban || 'SA0510000011500000186902'}</b></span>
-              </div>
-              <div class="zain-bank-row">
-                <span class="zain-bank-badge" style="background:#0284c7;">${settings.bank2Name || 'Al Rajhi Bank'}</span>
-                <span dir="rtl" style="font-weight: 700;">${settings.bank2Account || 'شركة زين المتقدمة التجارية'}</span>
-                <span>A/C No: <b>${settings.bank2Iban || 'SA0880000 471608010461457'}</b></span>
-              </div>
             </div>
 
             <!-- Signatures Row -->

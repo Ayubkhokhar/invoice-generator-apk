@@ -1368,20 +1368,6 @@ const App = {
               <div dir="rtl" style="margin-top: 1px;"><b>فقط ،</b> ${arTafqeet || ''} لاغير</div>
             </div>
 
-            <!-- Bank Accounts Box -->
-            <div class="zain-bank-box">
-              <div class="zain-bank-row">
-                <span class="zain-bank-badge">${settings.bank1Name || 'SNB'}</span>
-                <span dir="rtl" style="font-weight: 700;">${settings.bank1Account || 'شركة زين المتقدمة التجارية'}</span>
-                <span>A/C No: <b>${settings.bank1Iban || 'SA0510000011500000186902'}</b></span>
-              </div>
-              <div class="zain-bank-row">
-                <span class="zain-bank-badge" style="background:#0284c7;">${settings.bank2Name || 'Al Rajhi Bank'}</span>
-                <span dir="rtl" style="font-weight: 700;">${settings.bank2Account || 'شركة زين المتقدمة التجارية'}</span>
-                <span>A/C No: <b>${settings.bank2Iban || 'SA0880000 471608010461457'}</b></span>
-              </div>
-            </div>
-
             <!-- Signatures Row -->
             <div class="zain-signatures-row">
               <div>Received By<br><span dir="rtl">المستلم</span></div>
