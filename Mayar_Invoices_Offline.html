@@ -5674,7 +5674,14 @@ const App = {
         margin: [0, 0, 0, 0],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          scrollY: 0,
+          letterRendering: false,
+          windowWidth: 794
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
@@ -5864,21 +5871,21 @@ const App = {
     if (!printEl) return;
 
     // Document Title
-    let docTitle = 'فاتورة ضريبية مبسطة';
+    let docTitle = '<span dir="rtl">فاتورة ضريبية مبسطة</span> / <span dir="ltr">SIMPLIFIED TAX INVOICE</span>';
     if (inv.type === 'quotation') {
-      docTitle = (pLang === 'en') ? 'SALES QUOTATION' : ((pLang === 'bilingual') ? 'عرض سعر مبيعات / SALES QUOTATION' : 'عرض سعر مبيعات');
+      docTitle = (pLang === 'en') ? 'SALES QUOTATION' : ((pLang === 'bilingual') ? '<span dir="rtl">عرض سعر مبيعات</span> / <span dir="ltr">SALES QUOTATION</span>' : '<span dir="rtl">عرض سعر مبيعات</span>');
     } else if (inv.type === 'tax_invoice') {
-      docTitle = (pLang === 'en') ? 'TAX INVOICE' : ((pLang === 'bilingual') ? 'فاتورة ضريبية / TAX INVOICE' : 'فاتورة ضريبية');
+      docTitle = (pLang === 'en') ? 'TAX INVOICE' : ((pLang === 'bilingual') ? '<span dir="rtl">فاتورة ضريبية</span> / <span dir="ltr">TAX INVOICE</span>' : '<span dir="rtl">فاتورة ضريبية</span>');
     } else {
-      docTitle = (pLang === 'en') ? 'SIMPLIFIED TAX INVOICE' : ((pLang === 'bilingual') ? 'فاتورة ضريبية مبسطة / SIMPLIFIED TAX INVOICE' : 'فاتورة ضريبية مبسطة');
+      docTitle = (pLang === 'en') ? 'SIMPLIFIED TAX INVOICE' : ((pLang === 'bilingual') ? '<span dir="rtl">فاتورة ضريبية مبسطة</span> / <span dir="ltr">SIMPLIFIED TAX INVOICE</span>' : '<span dir="rtl">فاتورة ضريبية مبسطة</span>');
     }
 
     const isCash = (!inv.paymentMethod || inv.paymentMethod === 'cash');
-    const payMethodText = isCash ? 'CASH / نقدي' : (inv.paymentMethod === 'credit' ? 'CREDIT / آجل' : (inv.paymentMethod === 'bank' ? 'BANK / تحويل' : 'CARD / شبكة'));
+    const payMethodText = isCash ? '<span dir="ltr">CASH</span> / <span dir="rtl">نقدي</span>' : (inv.paymentMethod === 'credit' ? '<span dir="ltr">CREDIT</span> / <span dir="rtl">آجل</span>' : (inv.paymentMethod === 'bank' ? '<span dir="ltr">BANK</span> / <span dir="rtl">تحويل</span>' : '<span dir="ltr">CARD</span> / <span dir="rtl">شبكة</span>'));
 
     const cust = inv.customer || {};
-    const custName = cust.name || 'نقدي / SONU';
-    const custDist = cust.district || (cust.address ? cust.address.split('-')[0].trim() : 'المحجر');
+    const custName = cust.name || 'نقدي';
+    const custDist = cust.district || (cust.address ? cust.address.split('-')[0].trim() : (cust.destination || ''));
     const custPostal = cust.postalCode || '22421';
     const custCity = cust.cityName || cust.destination || 'جدة';
     const custCountry = cust.countryName || 'المملكة العربية السعودية';
@@ -5930,7 +5937,7 @@ const App = {
           </div>
 
           <!-- Right: Arabic Details -->
-          <div class="zain-header-right">
+          <div class="zain-header-right" dir="rtl">
             <div class="comp-title">${settings.companyNameAr || 'شركة زين المتقدمة التجارية بالجملة'}</div>
             <div style="opacity: 0.95; margin-bottom: 2px;">${settings.activityAr || 'خردوات والقرطاسية وأدوات التجميل بالجملة'}</div>
             <div>${settings.addressAr || 'جدة - المحجر - دوار النجوم - مركز النجوم'}</div>
@@ -5943,14 +5950,14 @@ const App = {
         <!-- 2. Sub-Header Strip -->
         <div class="zain-sub-header">
           <div class="zain-sub-left">
-            <span>Page 1 of 1</span> &nbsp;&nbsp; <span>${inv.pageInfo || 'رقم الصفحة : 1'}</span>
+            <span>Page 1 of 1</span> &nbsp;&nbsp; <span dir="rtl">${inv.pageInfo || 'رقم الصفحة : 1'}</span>
           </div>
           <div class="zain-sub-center">
             ${docTitle}
           </div>
           <div class="zain-sub-right">
-            <span>C.R No. : <b>${settings.crNumber || '4030294347'}</b> : رقم س ت</span><br>
-            <span>VAT No. : <b>${settings.taxNumber || '311186943400003'}</b> : الرقم الضريبي</span>
+            <span>C.R No. : <b>${settings.crNumber || '4030294347'}</b> <span dir="rtl">: رقم س ت</span></span><br>
+            <span>VAT No. : <b>${settings.taxNumber || '311186943400003'}</b> <span dir="rtl">: الرقم الضريبي</span></span>
           </div>
         </div>
 
@@ -5959,7 +5966,7 @@ const App = {
           <!-- Full Width Customer Name Bar -->
           <div class="zain-customer-bar">
             <div>Customer Name: <span style="color:#9e0e24; font-size:10.5px; font-weight:900;">${custName}</span></div>
-            <div><span style="color:#9e0e24; font-size:10.5px; font-weight:900;">${custName}</span> : اسم العميل</div>
+            <div dir="rtl"><span style="color:#9e0e24; font-size:10.5px; font-weight:900;">${custName}</span> : اسم العميل</div>
           </div>
 
           <!-- 3-Column Grid -->
@@ -5969,37 +5976,37 @@ const App = {
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">Payment Method:</span>
                 <span class="zain-field-val" style="color: #9e0e24;">${payMethodText}</span>
-                <span class="zain-field-lbl-ar">: طريقة الدفع</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: طريقة الدفع</span>
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">District :</span>
                 <span class="zain-field-val">${custDist}</span>
-                <span class="zain-field-lbl-ar">: الحي</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: الحي</span>
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">Postal Code :</span>
                 <span class="zain-field-val">${custPostal}</span>
-                <span class="zain-field-lbl-ar">: رمز البريدي</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: رمز البريدي</span>
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">City Name :</span>
                 <span class="zain-field-val">${custCity}</span>
-                <span class="zain-field-lbl-ar">: إسم المدينة</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: إسم المدينة</span>
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">Country Name :</span>
                 <span class="zain-field-val">${custCountry}</span>
-                <span class="zain-field-lbl-ar">: اسم البلد</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: اسم البلد</span>
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">Mobile :</span>
                 <span class="zain-field-val">${custPhone}</span>
-                <span class="zain-field-lbl-ar">: رقم الاتصال</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: رقم الاتصال</span>
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">Old Balance :</span>
                 <span class="zain-field-val">${custBalance}</span>
-                <span class="zain-field-lbl-ar">: رصيد السابق</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: رصيد السابق</span>
               </div>
             </div>
 
@@ -6012,43 +6019,43 @@ const App = {
             <div class="zain-meta-col-right">
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">Invoice No. :</span>
-                <span class="zain-field-val" style="color: #9e0e24; font-size:10.5px;">${inv.number}</span>
-                <span class="zain-field-lbl-ar">: رقم الفاتورة</span>
+                <span class="zain-field-val" style="color: #9e0e24; font-size:10.5px;">${inv.number || '000001'}</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: رقم الفاتورة</span>
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">Invoice Date :</span>
                 <span class="zain-field-val">${inv.date} ${inv.time || '10:15:20'}</span>
-                <span class="zain-field-lbl-ar">: تاريخ الفاتورة</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: تاريخ الفاتورة</span>
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">C.R No. :</span>
                 <span class="zain-field-val">${custCr}</span>
-                <span class="zain-field-lbl-ar">: رقم السجل التجاري</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: رقم السجل التجاري</span>
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">VAT No. :</span>
                 <span class="zain-field-val">${custTax}</span>
-                <span class="zain-field-lbl-ar">: الرقم الضريبي للعميل</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: الرقم الضريبي</span>
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">Building No. :</span>
                 <span class="zain-field-val">${custBuilding}</span>
-                <span class="zain-field-lbl-ar">: رقم المبنى</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: رقم المبنى</span>
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">Street Name :</span>
                 <span class="zain-field-val">${custStreet}</span>
-                <span class="zain-field-lbl-ar">: اسم الشارع</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: اسم الشارع</span>
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">Secondary No:</span>
                 <span class="zain-field-val">${custSecondary}</span>
-                <span class="zain-field-lbl-ar">: الرقم الإضافي</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: الرقم الإضافي</span>
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">Area Name :</span>
                 <span class="zain-field-val">${custArea}</span>
-                <span class="zain-field-lbl-ar">: اسم المنطقة</span>
+                <span class="zain-field-lbl-ar" dir="rtl">: اسم المنطقة</span>
               </div>
             </div>
           </div>
@@ -6058,17 +6065,17 @@ const App = {
         <table class="zain-table">
           <thead>
             <tr>
-              <th style="width: 22px;">م<br>Sl.No</th>
-              <th style="width: 48px;">رمز الصنف<br>SKU</th>
-              <th>اسم الصنف<br>Item Description</th>
-              <th style="width: 38px;">الكمية<br>Qty</th>
-              <th style="width: 36px;">الوحدة<br>Unit</th>
-              <th style="width: 46px;">سعر الوحدة<br>U. Price</th>
-              <th style="width: 46px;">العبوة<br>Packing</th>
-              <th style="width: 52px;">إجمالي الفاتورة<br>Total Price</th>
-              <th style="width: 30px;">الضريبة %<br>Tax%</th>
-              <th style="width: 44px;">الضريبة<br>Vat Amt.</th>
-              <th style="width: 54px;">الإجمالي<br>Amount</th>
+              <th style="width: 22px;"><span dir="rtl">م</span><br>Sl.No</th>
+              <th style="width: 48px;"><span dir="rtl">رمز الصنف</span><br>SKU</th>
+              <th><span dir="rtl">اسم الصنف</span><br>Item Description</th>
+              <th style="width: 38px;"><span dir="rtl">الكمية</span><br>Qty</th>
+              <th style="width: 36px;"><span dir="rtl">الوحدة</span><br>Unit</th>
+              <th style="width: 46px;"><span dir="rtl">سعر الوحدة</span><br>U. Price</th>
+              <th style="width: 46px;"><span dir="rtl">العبوة</span><br>Packing</th>
+              <th style="width: 52px;"><span dir="rtl">إجمالي الفاتورة</span><br>Total Price</th>
+              <th style="width: 30px;"><span dir="rtl">الضريبة %</span><br>Tax%</th>
+              <th style="width: 44px;"><span dir="rtl">الضريبة</span><br>Vat Amt.</th>
+              <th style="width: 54px;"><span dir="rtl">الإجمالي</span><br>Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -6083,28 +6090,28 @@ const App = {
             <!-- Tafqeet Banner -->
             <div class="zain-tafqeet-strip">
               <div><b>Only :</b> ${enTafqeet || 'Saudi Riyal ' + fmt(inv.grandTotal)} Only</div>
-              <div style="direction: rtl; margin-top: 1px;"><b>فقط ،</b> ${arTafqeet || ''} لاغير</div>
+              <div dir="rtl" style="margin-top: 1px;"><b>فقط ،</b> ${arTafqeet || ''} لاغير</div>
             </div>
 
             <!-- Bank Accounts Box -->
             <div class="zain-bank-box">
               <div class="zain-bank-row">
                 <span class="zain-bank-badge">${settings.bank1Name || 'SNB'}</span>
-                <span style="font-weight: 700;">${settings.bank1Account || 'شركة زين المتقدمة التجارية'}</span>
+                <span dir="rtl" style="font-weight: 700;">${settings.bank1Account || 'شركة زين المتقدمة التجارية'}</span>
                 <span>A/C No: <b>${settings.bank1Iban || 'SA0510000011500000186902'}</b></span>
               </div>
               <div class="zain-bank-row">
                 <span class="zain-bank-badge" style="background:#0284c7;">${settings.bank2Name || 'Al Rajhi Bank'}</span>
-                <span style="font-weight: 700;">${settings.bank2Account || 'شركة زين المتقدمة التجارية'}</span>
+                <span dir="rtl" style="font-weight: 700;">${settings.bank2Account || 'شركة زين المتقدمة التجارية'}</span>
                 <span>A/C No: <b>${settings.bank2Iban || 'SA0880000 471608010461457'}</b></span>
               </div>
             </div>
 
             <!-- Signatures Row -->
             <div class="zain-signatures-row">
-              <div>Received By<br>المستلم</div>
-              <div>Checked by<br>المراجع</div>
-              <div>Prepared By<br>اعدت بواسطة : <b>${inv.user || settings.preparedBy || settings.salesRep || 'المدير'}</b></div>
+              <div>Received By<br><span dir="rtl">المستلم</span></div>
+              <div>Checked by<br><span dir="rtl">المراجع</span></div>
+              <div>Prepared By<br><span dir="rtl">اعدت بواسطة : <b>${inv.user || settings.preparedBy || settings.salesRep || 'المدير'}</b></span></div>
             </div>
           </div>
 
@@ -6113,7 +6120,7 @@ const App = {
             <div class="zain-fin-row">
               <div class="lbl-en-ar">
                 <span>Total (Excluding VAT)</span>
-                <span class="lbl-ar">الإجمالي قبل ضريبة القيمة المضافة</span>
+                <span class="lbl-ar" dir="rtl">الإجمالي قبل ضريبة القيمة المضافة</span>
               </div>
               <div class="val">${fmt(inv.subtotal)}</div>
             </div>
@@ -6121,7 +6128,7 @@ const App = {
             <div class="zain-fin-row">
               <div class="lbl-en-ar">
                 <span>Total Taxable Amount (Excluding VAT)</span>
-                <span class="lbl-ar">إجمالي المبلغ الخاضع للضريبة (باستثناء ض.ق.م)</span>
+                <span class="lbl-ar" dir="rtl">إجمالي المبلغ الخاضع للضريبة (باستثناء ض.ق.م)</span>
               </div>
               <div class="val">${fmt(inv.netTotal)}</div>
             </div>
@@ -6129,7 +6136,7 @@ const App = {
             <div class="zain-fin-row">
               <div class="lbl-en-ar">
                 <span>Total VAT Amount</span>
-                <span class="lbl-ar">المبلغ الإجمالي شامل ضريبة القيمة المضافة</span>
+                <span class="lbl-ar" dir="rtl">المبلغ الإجمالي شامل ضريبة القيمة المضافة</span>
               </div>
               <div class="val">${fmt(inv.vatTotal)}</div>
             </div>
@@ -6137,7 +6144,7 @@ const App = {
             <div class="zain-fin-row zain-fin-grand-total">
               <div class="lbl-en-ar">
                 <span>Total Amount Due</span>
-                <span class="lbl-ar">إجمالي المبلغ المستحق</span>
+                <span class="lbl-ar" dir="rtl">إجمالي المبلغ المستحق</span>
               </div>
               <div class="val">${fmt(inv.grandTotal)}</div>
             </div>

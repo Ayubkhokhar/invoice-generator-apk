@@ -1139,6 +1139,7 @@ textarea.form-control {
   align-items: center;
   gap: 6px;
   margin-bottom: 3px;
+  letter-spacing: normal !important;
 }
 
 .zain-header-left {
@@ -1150,9 +1151,9 @@ textarea.form-control {
 .zain-header-left .comp-title {
   font-size: 12px;
   font-weight: 900;
-  letter-spacing: 0.3px;
   margin-bottom: 2px;
   color: #ffffff;
+  letter-spacing: normal !important;
 }
 
 .zain-header-center {
@@ -1186,7 +1187,7 @@ textarea.form-control {
   color: #ffffff;
   margin-top: 2px;
   font-weight: 600;
-  letter-spacing: 0.2px;
+  letter-spacing: normal !important;
 }
 
 .zain-header-right {
@@ -1194,6 +1195,7 @@ textarea.form-control {
   font-size: 8px;
   line-height: 1.2;
   direction: rtl;
+  letter-spacing: normal !important;
 }
 
 .zain-header-right .comp-title {
@@ -1201,6 +1203,7 @@ textarea.form-control {
   font-weight: 900;
   margin-bottom: 2px;
   color: #ffffff;
+  letter-spacing: normal !important;
 }
 
 /* Sub-Header Strip */
@@ -1212,6 +1215,7 @@ textarea.form-control {
   padding: 2px 6px;
   margin-bottom: 2px;
   background: #ffffff;
+  letter-spacing: normal !important;
 }
 
 .zain-sub-left {
@@ -1225,7 +1229,7 @@ textarea.form-control {
   font-size: 12px;
   font-weight: 900;
   color: #111827;
-  letter-spacing: 0.3px;
+  letter-spacing: normal !important;
 }
 
 .zain-sub-right {
@@ -1233,6 +1237,7 @@ textarea.form-control {
   font-weight: 700;
   font-size: 8.5px;
   line-height: 1.25;
+  letter-spacing: normal !important;
 }
 
 /* Customer & Meta Box (3 columns) */
@@ -1240,6 +1245,7 @@ textarea.form-control {
   border: 1px solid #111827;
   margin-bottom: 2px;
   background: #ffffff;
+  letter-spacing: normal !important;
 }
 
 .zain-customer-bar {
@@ -1251,17 +1257,20 @@ textarea.form-control {
   font-weight: 800;
   font-size: 10px;
   background: #fdfdfd;
+  letter-spacing: normal !important;
 }
 
 .zain-meta-grid {
   display: grid;
-  grid-template-columns: 1.35fr 100px 1.55fr;
+  grid-template-columns: 1.35fr 90px 1.55fr;
   align-items: stretch;
 }
 
 .zain-meta-col-left {
   padding: 2px 5px;
   border-right: 1px solid #111827;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .zain-meta-col-center {
@@ -1275,13 +1284,15 @@ textarea.form-control {
 }
 
 .zain-meta-col-center svg {
-  width: 78px !important;
-  height: 78px !important;
+  width: 76px !important;
+  height: 76px !important;
   display: block;
 }
 
 .zain-meta-col-right {
   padding: 2px 5px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .zain-field-row {
@@ -1291,6 +1302,9 @@ textarea.form-control {
   font-size: 8.8px;
   line-height: 1.3;
   border-bottom: 1px dashed #e2e8f0;
+  min-width: 0;
+  gap: 3px;
+  letter-spacing: normal !important;
 }
 
 .zain-field-row:last-child {
@@ -1300,7 +1314,8 @@ textarea.form-control {
 .zain-field-lbl-en {
   font-weight: 700;
   color: #374151;
-  min-width: 70px;
+  white-space: nowrap;
+  flex-shrink: 0;
   text-align: left;
 }
 
@@ -1309,17 +1324,21 @@ textarea.form-control {
   color: #111827;
   flex: 1;
   text-align: center;
-  padding: 0 3px;
+  padding: 0 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+  letter-spacing: normal !important;
 }
 
 .zain-field-lbl-ar {
   font-weight: 700;
   color: #374151;
-  min-width: 70px;
+  white-space: nowrap;
+  flex-shrink: 0;
   text-align: right;
+  direction: rtl;
 }
 
 /* Items Table */
