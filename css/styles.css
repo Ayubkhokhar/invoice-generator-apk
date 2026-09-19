@@ -685,7 +685,7 @@ textarea.form-control {
   background: #ffffff;
   width: 195mm;
   max-width: 195mm;
-  min-height: 275mm;
+  min-height: auto;
   margin: 0 auto;
   padding: 4mm 5mm 4mm;
   color: #0f172a;
@@ -696,7 +696,7 @@ textarea.form-control {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   overflow: hidden;
 }
 
@@ -1120,8 +1120,6 @@ textarea.form-control {
    ========================================================================== */
 .zain-inv-container {
   width: 100%;
-  height: 100%;
-  min-height: 267mm;
   color: #111827;
   font-family: 'Arial', 'Cairo', sans-serif;
   font-size: 9.5px;
@@ -1130,7 +1128,8 @@ textarea.form-control {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 3px;
 }
 
 /* Red Top Header Box */
@@ -1348,10 +1347,7 @@ textarea.form-control {
 
 /* Items Table */
 .zain-table-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 115mm;
+  display: block;
   margin-bottom: 3px;
   position: relative;
 }
@@ -1362,7 +1358,6 @@ textarea.form-control {
   border: 1px solid #111827;
   font-size: 9px;
   position: relative;
-  height: 100%;
 }
 
 .zain-table th {
@@ -1383,23 +1378,13 @@ textarea.form-control {
   line-height: 1.2;
 }
 
-.zain-table tr:nth-child(even):not(.zain-filler-row) {
+.zain-table tr:nth-child(even) {
   background: #fdfdfd;
 }
 
 .zain-table td.desc-cell {
   text-align: left;
   font-weight: 700;
-}
-
-.zain-filler-row td {
-  height: 22px;
-  border-right: 1px solid #111827;
-  border-left: 1px solid #111827;
-  border-top: none;
-  border-bottom: none;
-  padding: 0 3px;
-  background: transparent;
 }
 
 .zain-table-watermark {
@@ -1577,12 +1562,12 @@ textarea.form-control {
   #invoice-print-wrapper {
     display: flex !important;
     flex-direction: column !important;
-    justify-content: space-between !important;
+    justify-content: flex-start !important;
     padding: 2mm 3mm 2mm !important;
     margin: 0 auto !important;
     width: 195mm !important;
     max-width: 195mm !important;
-    min-height: 275mm !important;
+    min-height: auto !important;
     border: none !important;
     box-shadow: none !important;
     overflow: hidden !important;

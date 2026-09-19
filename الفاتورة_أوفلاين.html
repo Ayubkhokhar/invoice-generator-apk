@@ -6034,29 +6034,6 @@ const App = {
       </tr>
     `).join('');
 
-    const minRows = 10;
-    const itemsCount = (inv.items || []).length;
-    let fillerRowsHtml = '';
-    if (itemsCount < minRows) {
-      for (let i = itemsCount; i < minRows; i++) {
-        fillerRowsHtml += `
-          <tr class="zain-filler-row">
-            <td style="width: 22px;">&nbsp;</td>
-            <td style="width: 48px;">&nbsp;</td>
-            <td class="desc-cell">&nbsp;</td>
-            <td style="width: 38px;">&nbsp;</td>
-            <td style="width: 36px;">&nbsp;</td>
-            <td style="width: 46px;">&nbsp;</td>
-            <td style="width: 46px;">&nbsp;</td>
-            <td style="width: 52px;">&nbsp;</td>
-            <td style="width: 30px;">&nbsp;</td>
-            <td style="width: 44px;">&nbsp;</td>
-            <td style="width: 54px;">&nbsp;</td>
-          </tr>
-        `;
-      }
-    }
-
     printEl.innerHTML = `
       <div class="zain-inv-container">
         <!-- 1. Red Header Box -->
@@ -6224,7 +6201,6 @@ const App = {
             </thead>
             <tbody>
               ${rowsHtml}
-              ${fillerRowsHtml}
             </tbody>
           </table>
         </div>
