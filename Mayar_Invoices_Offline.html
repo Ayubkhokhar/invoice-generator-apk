@@ -6181,8 +6181,9 @@ const App = {
           </div>
         </div>
 
-        <!-- 4. Items Table (11 Columns) with Vertical Expansion -->
+        <!-- 4. Items Table (11 Columns) with Continuous Vertical Column Lines -->
         <div class="zain-table-container">
+          <img src="${settings.logoUrl || 'assets/zain_logo.svg'}" class="zain-table-watermark" alt="Watermark">
           <table class="zain-table">
             <thead>
               <tr>
@@ -6201,6 +6202,19 @@ const App = {
             </thead>
             <tbody>
               ${rowsHtml}
+              <tr class="zain-table-fill-row">
+                <td></td>
+                <td></td>
+                <td class="desc-cell"></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
             </tbody>
           </table>
         </div>
