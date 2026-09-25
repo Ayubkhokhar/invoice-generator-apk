@@ -229,6 +229,10 @@ const I18N = {
       en: 'Destination / City',
       ar: 'المدينة / الوجهة'
     },
+    lblCustomerPostal: {
+      en: 'Postal Code (الرمز البريدي)',
+      ar: 'الرمز البريدي (Postal Code)'
+    },
     lblCustomerAddress: {
       en: 'Customer Address',
       ar: 'العنوان بالتفصيل'

@@ -198,6 +198,10 @@
             <input type="text" class="form-control" id="inv-cust-dest" placeholder="Jeddah / Local" value="محلي" oninput="App.onCustomerFieldInput('destination', this.value)">
           </div>
           <div class="form-group">
+            <label data-i18n="lblCustomerPostal" style="font-weight:600;">Postal Code (الرمز البريدي)</label>
+            <input type="text" class="form-control" id="inv-cust-postal" placeholder="e.g. 22421" oninput="App.onCustomerFieldInput('postalCode', this.value)">
+          </div>
+          <div class="form-group">
             <label data-i18n="lblCustomerCr" style="font-weight:600;">Commercial Reg. (CR No.)</label>
             <input type="text" class="form-control" id="inv-cust-cr" placeholder="4030000000" oninput="App.onCustomerFieldInput('crNumber', this.value)">
           </div>
@@ -786,6 +790,10 @@
           <div class="form-group">
             <label>Destination / City</label>
             <input type="text" class="form-control" id="cust-dest" placeholder="Jeddah">
+          </div>
+          <div class="form-group">
+            <label data-i18n="lblCustomerPostal">Postal Code (الرمز البريدي)</label>
+            <input type="text" class="form-control" id="cust-postal" placeholder="e.g. 22421">
           </div>
           <div class="form-group" style="grid-column: 1 / -1;">
             <label>Address</label>

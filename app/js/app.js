@@ -217,6 +217,8 @@ const App = {
     if (custPhoneEl) custPhoneEl.value = inv.customer ? (inv.customer.phone || '') : '';
     const custCrEl = document.getElementById('inv-cust-cr');
     if (custCrEl) custCrEl.value = inv.customer ? (inv.customer.crNumber || '') : '';
+    const custPostalEl = document.getElementById('inv-cust-postal');
+    if (custPostalEl) custPostalEl.value = inv.customer ? (inv.customer.postalCode || '') : '';
     const custAddrEl = document.getElementById('inv-cust-address');
     if (custAddrEl) custAddrEl.value = inv.customer ? (inv.customer.address || '') : '';
     const custDestEl = document.getElementById('inv-cust-dest');
@@ -296,6 +298,7 @@ const App = {
         taxNumber: cust.taxNumber || 'لايوجد',
         phone: cust.phone || '',
         crNumber: cust.crNumber || '',
+        postalCode: cust.postalCode || '',
         address: cust.address || '',
         destination: cust.destination || 'محلي',
         representative: cust.representative || '',
@@ -309,6 +312,7 @@ const App = {
       setF('inv-cust-tax', cust.taxNumber || 'لايوجد');
       setF('inv-cust-phone', cust.phone || '');
       setF('inv-cust-cr', cust.crNumber || '');
+      setF('inv-cust-postal', cust.postalCode || '');
       setF('inv-cust-address', cust.address || '');
       setF('inv-cust-dest', cust.destination || 'محلي');
       setF('inv-cust-rep', cust.representative || '');
@@ -716,6 +720,7 @@ const App = {
       taxNumber: document.getElementById('inv-cust-tax')?.value || 'لايوجد',
       phone: document.getElementById('inv-cust-phone')?.value || '',
       crNumber: document.getElementById('inv-cust-cr')?.value || '',
+      postalCode: document.getElementById('inv-cust-postal')?.value?.trim() || '',
       address: document.getElementById('inv-cust-address')?.value || '',
       destination: document.getElementById('inv-cust-dest')?.value || 'محلي',
       representative: document.getElementById('inv-cust-rep')?.value || '',
@@ -1160,7 +1165,7 @@ const App = {
     const cust = inv.customer || {};
     const custName = cust.name || 'نقدي';
     const custDist = cust.district || (cust.address ? cust.address.split('-')[0].trim() : (cust.destination || ''));
-    const custPostal = cust.postalCode || '22421';
+    const custPostal = (cust.postalCode !== undefined && cust.postalCode !== null) ? String(cust.postalCode).trim() : '';
     const custCity = cust.cityName || cust.destination || 'جدة';
     const custCountry = cust.countryName || 'المملكة العربية السعودية';
     const custPhone = cust.phone || '';
@@ -1259,7 +1264,7 @@ const App = {
               </div>
               <div class="zain-field-row">
                 <span class="zain-field-lbl-en">Postal Code :</span>
-                <span class="zain-field-val">${custPostal}</span>
+                <span class="zain-field-val">${custPostal || '-'}</span>
                 <span class="zain-field-lbl-ar" dir="rtl">: رمز البريدي</span>
               </div>
               <div class="zain-field-row">
@@ -2105,9 +2110,9 @@ const App = {
         <td class="col-address">
           <div class="mobile-field-row">
             <span class="mobile-field-label">${isEn ? 'Address' : 'العنوان'}:</span>
-            <span>${c.address || '-'}</span>
+            <span>${c.address || '-'}${c.postalCode ? ' (' + c.postalCode + ')' : ''}</span>
           </div>
-          <span class="desktop-cell-text">${c.address || '-'}</span>
+          <span class="desktop-cell-text">${c.address || '-'}${c.postalCode ? ' (' + c.postalCode + ')' : ''}</span>
         </td>
         <td class="col-actions">
           <div class="card-actions-wrapper" onclick="event.stopPropagation()">
@@ -2138,8 +2143,9 @@ const App = {
     setVal('cust-tax', 'لايوجد');
     setVal('cust-cr', '');
     setVal('cust-phone', '');
-    setVal('cust-address', '');
     setVal('cust-dest', isEn ? 'Local' : 'محلي');
+    setVal('cust-postal', '');
+    setVal('cust-address', '');
 
     const modal = document.getElementById('modal-customer');
     if (modal) modal.classList.add('show');
@@ -2162,8 +2168,9 @@ const App = {
     setVal('cust-tax', cust.taxNumber || 'لايوجد');
     setVal('cust-cr', cust.crNumber || '');
     setVal('cust-phone', cust.phone || '');
-    setVal('cust-address', cust.address || '');
     setVal('cust-dest', cust.destination || (isEn ? 'Local' : 'محلي'));
+    setVal('cust-postal', cust.postalCode || '');
+    setVal('cust-address', cust.address || '');
 
     const modal = document.getElementById('modal-customer');
     if (modal) modal.classList.add('show');
@@ -2188,6 +2195,7 @@ const App = {
       taxNumber: document.getElementById('cust-tax')?.value.trim() || 'لايوجد',
       crNumber: document.getElementById('cust-cr')?.value.trim() || '',
       phone: document.getElementById('cust-phone')?.value.trim() || '',
+      postalCode: document.getElementById('cust-postal')?.value.trim() || '',
       address: document.getElementById('cust-address')?.value.trim() || '',
       destination: document.getElementById('cust-dest')?.value.trim() || 'محلي'
     };
